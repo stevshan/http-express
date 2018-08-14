@@ -42,6 +42,9 @@ build/
 [Oo]bj/
 build/Release
 
+# Publish directories
+publish/
+
 # Dependency directories
 node_modules/
 jspm_packages/
