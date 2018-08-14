@@ -1,0 +1,37 @@
+{
+    "productName": "HTPP Express",
+    "description": "A simple HTTP client with UX.",
+    "copyright": "Steven Shan",
+    "targetExecutableName": "http-express",
+    "appId": "com.stevshan.http-express",
+    "appCategory": "Utilities",
+    "buildNumber": "*",
+    "licensing": {
+        "thirdPartyNoticesFileName": "ThirdPartyNotices.txt"
+    },
+    "targets": {
+        "windows": {
+            "archs": [
+                "x86"
+            ]
+        },
+        "linux": {
+            "archs": [
+                "x86",
+                "x64"
+            ]
+        },
+        "macos": {
+            "archs": [
+                "x64"
+            ]
+        }
+    },
+    "paths": {
+        "buildDir": "./build",
+        "publishDir": "./publish",
+        "appDir": "*",
+        "buildResDir": "*",
+        "modulesDir": "./modules"
+    }
+}

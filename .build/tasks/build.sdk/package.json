@@ -1,0 +1,18 @@
+{
+  "name": "http-express",
+  "version": "1.0.0-private",
+  "description": "HTTP Express SDK.",
+  "main": "main.js",
+  "types": "http-express.d.ts",
+  "homepage": "https://github.com/stevshan/http-express",
+  "repository": {
+    "url": "https://github.com/stevshan/http-express.git",
+    "type": "git"
+  },
+  "author": "Steven Shan <thoughtskp@hotmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^2.0.2",
+    "typescript": "^2.9.1"
+  }
+}
