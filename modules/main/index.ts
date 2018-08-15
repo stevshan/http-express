@@ -3,27 +3,27 @@
 // Licensed under the MIT License. See License file under the project root for license information.
 //-----------------------------------------------------------------------------
 import { IModuleInfo, IModule, IModuleManager } from "http-express.module-manager";
+import { MenuItemConstructorOptions } from "electron";
 
+import { electron } from "../../utilities/electron-adapter";
 import * as appUtils from "../../utilities/appUtils";
-import { app, Menu, MenuItemConstructorOptions } from "electron";
 import { env, Platform } from "../../utilities/env";
 
 (<IModule>exports).getModuleMetadata = (components): IModuleInfo => {
     return {
         name: "main",
-        version: appUtils.getAppVersion(),
-        loadingMode: "Always"
+        version: appUtils.getAppVersion()
     };
 };
 
 (<IModule>exports).initializeAsync = async (moduleManager: IModuleManager): Promise<void> => {
-    app.on("window-all-closed", (event) => undefined);
+    electron.app.on("window-all-closed", (event) => undefined);
 
-    if (app.isReady()) {
+    if (electron.app.isReady()) {
         return startup();
     }
 
-    app.once("ready", startup);
+    electron.app.once("ready", startup);
 };
 
 async function startup(): Promise<void> {
@@ -33,22 +33,25 @@ async function startup(): Promise<void> {
         const settings = await moduleManager.getComponentAsync("settings");
 
         log.writeInfoAsync("Initialize application menu for macOS.");
-        Menu.setApplicationMenu(
-            Menu.buildFromTemplate(
+        electron.Menu.setApplicationMenu(
+            electron.Menu.buildFromTemplate(
                 await settings.getAsync<Array<MenuItemConstructorOptions>>("defaultMenu/" + env.platform)));
     }
 
-    const mainWindow = await moduleManager.getComponentAsync("browser-window");
+    const mainWindow =
+        await moduleManager.getComponentAsync(
+            "browser-window");
 
+    mainWindow.webContents.openDevTools();
     mainWindow.loadURL(appUtils.local("./main.html"));
 
     // Handle "window-all-closed" event.
-    app.removeAllListeners("window-all-closed");
-    app.once("window-all-closed", async () => {
+    electron.app.removeAllListeners("window-all-closed");
+    electron.app.once("window-all-closed", async () => {
         const log = await moduleManager.getComponentAsync("logging");
 
         log.writeInfoAsync("'window-all-closed': app.quit().");
-        app.quit();
+        electron.app.quit();
     });
 
     log.writeInfoAsync("application startup finished.");

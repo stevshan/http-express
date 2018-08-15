@@ -3,56 +3,17 @@
 // Licensed under the MIT License. See License file under the project root for license information.
 //-----------------------------------------------------------------------------
 
-import { IDictionary } from "http-express.common";
 import { IModuleManager } from "http-express.module-manager";
+import { BrowserWindowConstructorOptions, BrowserWindow } from "electron";
 
-import { dialog, BrowserWindow, app, BrowserWindowConstructorOptions } from "electron";
-import * as url from "url";
 import * as uuidv5 from "uuid/v5";
 
+import { electron } from "../../utilities/electron-adapter";
 import { env, Platform } from "../../utilities/env";
 import * as appUtils from "../../utilities/appUtils";
 import { ModuleManager } from "../../module-manager/module-manager";
 
 const UuidNamespace = "614e2e95-a80d-4ee5-9fd5-fb970b4b01a3";
-
-function handleSslCert(window: BrowserWindow): void {
-    const trustedCertManager: IDictionary<boolean> = Object.create(null);
-
-    window.webContents.on("certificate-error", (event, urlString, error, certificate, trustCertificate) => {
-        event.preventDefault();
-
-        const certIdentifier = url.parse(urlString).hostname + certificate.subjectName;
-
-        if (certIdentifier in trustedCertManager) {
-            trustCertificate(trustedCertManager[certIdentifier]);
-        } else {
-            trustedCertManager[certIdentifier] = false;
-
-            dialog.showMessageBox(
-                window,
-                {
-                    type: "warning",
-                    buttons: ["Yes", "Exit"],
-                    title: "Untrusted certificate",
-                    message: "Do you want to trust this certificate?",
-                    detail: "Subject: " + certificate.subjectName + "\r\nIssuer: " + certificate.issuerName + "\r\nThumbprint: " + certificate.fingerprint,
-                    cancelId: 1,
-                    defaultId: 0,
-                    noLink: true,
-                },
-                (response, checkboxChecked) => {
-                    if (response !== 0) {
-                        app.quit();
-                        return;
-                    }
-
-                    trustedCertManager[certIdentifier] = true;
-                    trustCertificate(true);
-                });
-        }
-    });
-}
 
 function handleNewWindow(window: BrowserWindow) {
     window.webContents.on("new-window",
@@ -128,15 +89,14 @@ export default async function createBrowserWindowAsync(
 
     addModuleManagerConstructorOptions(windowOptions, moduleManager);
 
-    const window = new BrowserWindow(windowOptions);
+    const window = new electron.BrowserWindow(windowOptions);
     const hostName = uuidv5(window.id.toString(), UuidNamespace);
 
     await moduleManager.newHostAsync(hostName, await moduleManager.getComponentAsync("ipc.communicator", window.webContents));
 
     window.on("page-title-updated", (event, title) => event.preventDefault());
-    window.setTitle(`${window.getTitle()} - ${app.getVersion()}`);
+    window.setTitle(`${window.getTitle()} - ${electron.app.getVersion()}`);
 
-    handleSslCert(window);
     handleNewWindow(window);
 
     if (env.platform !== Platform.MacOs) {

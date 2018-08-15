@@ -53,6 +53,7 @@ const utils = common.utils;
  * @property {string} publishDir
  * @property {string} appDir
  * @property {string} modulesDir
+ * @property {string} sdkDir
  */
 
 /**
@@ -130,6 +131,11 @@ if (buildInfos.buildNumber === "*") {
 if (buildInfos.paths.appDir === "*") {
     buildInfos.paths.appDir = path.join(buildInfos.paths.buildDir, "app");
     log.info("Initialized", "buildInfos.paths.appDir", "=", buildInfos.paths.appDir);
+}
+
+if (buildInfos.paths.sdkDir === "*") {
+    buildInfos.paths.sdkDir = path.join(buildInfos.paths.buildDir, "sdk");
+    log.info("Initialized", "buildInfos.paths.sdkDir", "=", buildInfos.paths.sdkDir);
 }
 
 log.info("Finished", "buildInfos auto-initializiation", ".");
