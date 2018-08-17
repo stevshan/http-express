@@ -92,6 +92,11 @@ gulp.task("build:html",
         gulp.src(utilities.formGlobs("**/*.html"))
             .pipe(gulp.dest(buildInfos.paths.appDir)));
 
+gulp.task("build:css",
+    () =>
+        gulp.src(utilities.formGlobs("**/*.css"))
+            .pipe(gulp.dest(buildInfos.paths.appDir)));
+
 gulp.task("build:img",
     () =>
         gulp.src(utilities.formGlobs(["icons/**/*.*"]))
@@ -113,6 +118,7 @@ gulp.task("build:licenses",
 gulp.task("build",
     gulp.parallel(
         "build:ts",
+        "build:css",
         "build:html",
         "build:json",
         "build:img"));
@@ -121,6 +127,7 @@ gulp.task("build:debug",
     gulp.parallel(
         "build:ts@compile",
         "build:html",
+        "build:css",
         "build:json",
         "build:img"));
 
