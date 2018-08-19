@@ -36,7 +36,8 @@ function generateVersionInfo(platform, getPackageInfo) {
     }
 
     if (!utils.isObject(buildInfos.updateInfos) || !utils.isString(buildInfos.updateInfos.baseUrl)) {
-        throw new Error("buildInfos.updateInfos.baseUrl must be specified.");
+        // TODO: throw new Error("buildInfos.updateInfos.baseUrl must be specified.");
+        return;
     }
 
     /** @type {string} */

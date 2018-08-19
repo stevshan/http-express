@@ -8,11 +8,26 @@
 
 <body>
     <nav class="navbar title px-1 navbar-expend navbar-dark bg-secondary justify-content-between" ng-controller="TitleBarController">
-        <a class="navbar-brand ml-2" href="#">HTTP Express</a>
+        <a class="navbar-brand ml-2" href="#">
+            <i class="icons i-http-express"></i>
+            HTTP Express
+        </a>
         <div class="btn-group mr-2" role="group">
-            <button type="button" class="btn btn-secondary" ng-click="about()">
+            <button type="button" class="btn btn-secondary" ng-click="about()" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="icons i-about"></i>
             </button>
+            <div class="dropdown-menu dropdown-menu-right p-4 text-muted" style="width: 350px">
+                <h6 class="dropdown-header">About</h6>
+                <h5 class="px-4">HTTP Express</h5>
+                <p class="px-4">{{appVersion}}</p>
+                <br />
+                <p class="px-4">Copyright (c) 2018 Steven Shan. <br />All rights reserved.</p>
+                <p class="px-4">Licensed under the MIT License.</p>
+                <p class="px-4">
+                    <i class="icons i-github"></i>
+                    <a href="https://github.com/stevshan/http-express" target="_blank">GitHub Repository</a>
+                </p>
+            </div>
             <button type="button" class="btn btn-secondary" ng-click="minimizeWindow()">
                 <i class="icons i-minimize"></i>
             </button>
@@ -26,21 +41,21 @@
     </nav>
     <div ng-controller="HttpClientController">
         <nav class="navbar px-1 navbar-expand navbar-light bg-light">
-
             <div class="input-group was-validated">
                 <div class="input-group-prepend">
-                    <button id="btnMethod" class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{method}}</button>
+                    <button id="btnMethod" class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">{{method}}</button>
                     <div class="dropdown-menu">
                         <h6 class="dropdown-header">HTTP Methods</h6>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('GET')">GET</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('POST')">POST</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('PUT')">PUT</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('DELETE')">DELETE</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('PATCH')">PATCH</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('OPTIONS')">OPTIONS</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('HEAD')">HEAD</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('CONNECT')">CONNECT</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('TRACE')">TRACE</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('GET')" ng-class="{ active: method === 'GET' }">GET</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('POST')" ng-class="{ active: method === 'POST' }">POST</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('PUT')" ng-class="{ active: method === 'PUT' }">PUT</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('DELETE')" ng-class="{ active: method === 'DELETE' }">DELETE</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('PATCH')" ng-class="{ active: method === 'PATCH' }">PATCH</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('OPTIONS')" ng-class="{ active: method === 'OPTIONS' }">OPTIONS</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('HEAD')" ng-class="{ active: method === 'HEAD' }">HEAD</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('CONNECT')" ng-class="{ active: method === 'CONNECT' }">CONNECT</a>
+                        <a class="dropdown-item" href="#" ng-click="updateMethod('TRACE')" ng-class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
                 <input id="inputUrl" type="url" class="form-control code-font" ng-model="url" required>

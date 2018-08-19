@@ -8,8 +8,18 @@
         url("fa-regular-400.svg#fontawesome") format("svg"); 
 }
 
+@font-face {
+    font-family: "Font Awesome 5 Brands";
+    font-style: normal;
+    font-weight: 400;
+    src: url("fa-brands-400.ttf") format("truetype"),
+         url("fa-brands-400.woff2") format("woff2"), 
+         url("fa-brands-400.woff") format("woff"), 
+         url("fa-brands-400.svg#fontawesome") format("svg"); 
+ }
+
 .icons {
-    font-family: "Font Awesome 5 Free";
+    font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands";
     font-weight: normal;
     font-style: normal;
     display: inline-block;
@@ -50,4 +60,12 @@
 
 .icons.i-about::before {
     content: "\f059";
+}
+
+.icons.i-github::before {
+    content: "\f09b";
+}
+
+.icons.i-http-express::before {
+    content: "\f1d8";
 }

@@ -12,6 +12,8 @@ interface ITitleBarScope extends ng.IScope {
     maximizeOrRestoreWindow: () => void;
     closeWindow: () => void;
     isWindowMaximized: () => boolean;
+    
+    appVersion: string;
 }
 
 function maximizeOrRestoreWindow() {
@@ -30,6 +32,7 @@ ng.module("http-express")
             ($scope: ITitleBarScope) => {
                 $scope.maximizeOrRestoreWindow = maximizeOrRestoreWindow;
 
+                $scope.appVersion = electron.app.getVersion();
                 $scope.minimizeWindow = () => electron.remote.getCurrentWindow().minimize();
                 $scope.closeWindow = () => electron.remote.getCurrentWindow().close();
                 $scope.isWindowMaximized = () => electron.remote.getCurrentWindow().isMaximized();
