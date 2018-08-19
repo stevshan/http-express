@@ -3,19 +3,24 @@
 // Licensed under the MIT License. See License file under the project root for license information.
 //-----------------------------------------------------------------------------
 
-import { IDictionary } from "http-express.common";
+import { IDictionary, IDisposable } from "http-express.common";
 import { IHttpClient, HttpMethod, IHttpResponse } from "http-express.http";
 
 import * as ng from "angular";
 import * as url from "url";
 import { Buffer } from "buffer";
 import * as $ from "jquery";
+import { ICertificateInfo } from "http-express.cert";
+import { electron } from "../../../utilities/electron-adapter";
 
 interface IHttpClientScope extends ng.IScope {
     url: string;
     method: HttpMethod;
     headers: string;
     body: string;
+    httpClientPromise: Promise<IHttpClient & IDisposable>;
+    serverCert: ICertificateInfo;
+    trustedServerCerts: IDictionary<boolean>;
 
     readonly protocol: string;
     readonly host: string;
@@ -23,8 +28,6 @@ interface IHttpClientScope extends ng.IScope {
     updateMethod: (method: HttpMethod) => void;
     sendRequest: () => void;
 }
-
-const httpClientPromise: Promise<IHttpClient> = moduleManager.getComponentAsync("http.http-client");
 
 function disableInputs(toDisable: boolean = true): void {
     $("#btnMethod").prop("disabled", toDisable);
@@ -48,7 +51,13 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
     response += `HTTP/${httpVersion} ${statusCode} ${statusMessage} \r\n`;
 
     for (const headerName in httpHeaders) {
-        response += `${headerName}: ${httpHeaders[headerName]} \r\n`;
+        const headerValue: string | Array<string> = httpHeaders[headerName];
+        
+        if (Array.isArray(headerValue)) {
+            headerValue.forEach((item) => response += `${headerName}: ${item} \r\n`);
+        } else {
+            response += `${headerName}: ${headerValue} \r\n`;
+        }
     }
 
     response += "\r\n";
@@ -58,7 +67,7 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
     if (data instanceof Buffer) {
         let encoding: string = null;
         const contentType = httpHeaders["content-type"];
-        
+
         if (!encoding && contentType && contentType.includes("text/")) {
             encoding = "utf8";
 
@@ -97,7 +106,7 @@ function sendRequestAsync($scope: IHttpClientScope): Promise<void> {
         $scope.body = "";
     }
 
-    return httpClientPromise
+    return $scope.httpClientPromise
         .then((httpClient) =>
             httpClient.requestAsync(
                 {
@@ -110,6 +119,44 @@ function sendRequestAsync($scope: IHttpClientScope): Promise<void> {
         .then(() => disableInputs(false));
 }
 
+function validateServerCert($scope: IHttpClientScope, serverName: string, cert: ICertificateInfo): Error | void {
+    $scope.trustedServerCerts = $scope.trustedServerCerts || {};
+
+    if ($scope.trustedServerCerts[cert.thumbprint] === true) {
+        return;
+    } else if ($scope.trustedServerCerts[cert.thumbprint] === false) {
+        return new Error("Not trusted");
+    } else {
+        let certDetail: string = "";
+
+        certDetail += `Subject: ${cert.subjectName} \r\n`;
+        certDetail += `Issuer: ${cert.issuerName} \r\n`;
+        certDetail += `Serial: ${cert.serialNumber} \r\n`;
+        certDetail += `Thumbprint: ${cert.thumbprint} \r\n`;
+        certDetail += `Valid from: ${cert.validStart.toLocaleString()} \r\n`;
+        certDetail += `Valid to: ${cert.validExpiry.toLocaleString()} \r\n`;
+
+        const response =
+            electron.dialog.showMessageBox(electron.remote.getCurrentWindow(), {
+                type: "warning",
+                buttons: ["Trust", "Cancel"],
+                defaultId: 1,
+                title: "Certificate Validation",
+                message: "Should the following certificate from the server be trusted?",
+                detail: certDetail,
+                cancelId: 1
+            });
+
+        if (response === 0) {
+            $scope.trustedServerCerts[cert.thumbprint] = true;
+            return;
+        } else {
+            $scope.trustedServerCerts[cert.thumbprint] = false;
+            return new Error("Not trusted");
+        }
+    }
+}
+
 ng.module("http-express")
     .controller("HttpClientController",
         ["$scope",
@@ -118,6 +165,8 @@ ng.module("http-express")
                 $scope.headers = "";
                 $scope.body = "";
                 $scope.method = "GET";
+                $scope.httpClientPromise =
+                    moduleManager.getComponentAsync("http.http-client", validateServerCert.bind(null, $scope));
 
                 $scope.sendRequest = sendRequestAsync.bind(null, $scope);
 

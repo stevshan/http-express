@@ -121,7 +121,9 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
         if (Function.isFunction(this.serverCertValidator)) {
             options.rejectUnauthorized = false;
             options["checkServerIdentity"] =
-                (serverName, cert) => this.serverCertValidator(serverName, toCertificateInfo(cert));
+                (serverName, cert) => {
+                    return this.serverCertValidator(serverName, toCertificateInfo(cert));
+                };
         }
 
         return options;

@@ -12,7 +12,7 @@ export interface IUnderlyingHttpResponse extends Readable {
     httpVersion: string;
     statusCode: number;
     statusMessage: string;
-    headers: IDictionary<string>;
+    headers: IDictionary<string | Array<string>>;
 }
 
 export class HttpResponseProxy implements IHttpResponse {
@@ -40,7 +40,7 @@ export class HttpResponseProxy implements IHttpResponse {
         return Promise.resolve(this.httpResponse.statusMessage);
     }
 
-    public get headers(): Promise<IDictionary<string>> {
+    public get headers(): Promise<IDictionary<string | Array<string>>> {
         return Promise.resolve(this.httpResponse.headers);
     }
 
