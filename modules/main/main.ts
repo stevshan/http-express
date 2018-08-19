@@ -4,5 +4,9 @@
 //-----------------------------------------------------------------------------
 
 import "bootstrap";
+import * as ng from "angular";
 
+ng.module("http-express", []);
 
+import "./controllers/TitleBarController";
+import "./controllers/HttpClientController";

@@ -153,7 +153,7 @@ export class DataInfoManager implements IDisposable {
 
     private toObjectDataInfo(target: Object, parentId?: string): IDataInfo {
         const ref = this.refRoot.refer(target, parentId);
-        
+
         let dataInfo: IObjectDataInfo = <IObjectDataInfo>ref.getRefDataInfo(target);
 
         if (dataInfo) {
@@ -176,8 +176,12 @@ export class DataInfoManager implements IDisposable {
             for (const propertyName in propertyDescriptors) {
                 const propertyDescriptor = propertyDescriptors[propertyName];
 
-                if (!propertyDescriptor.enumerable
-                    || !propertyDescriptor.writable
+                if (propertyName in memberInfos) {
+                    continue;
+                }
+
+                if ((!propertyDescriptor.enumerable
+                    || !propertyDescriptor.writable)
                     && !propertyDescriptor.get
                     && !propertyDescriptor.set) {
                     memberInfos[propertyName] = this.toDataInfo(propertyDescriptor.value, dataInfo.id, false);

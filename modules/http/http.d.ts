@@ -52,7 +52,7 @@ declare module "http-express.http" {
     import { ICertificateInfo, ICertificate } from "http-express.cert";
     import { Readable, Writable } from "stream";
 
-    export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD" | "CONNECT" | "TRACE";
 
     export interface IHttpResponse {
         readonly httpVersion: Promise<string>;
