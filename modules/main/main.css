@@ -1,3 +1,35 @@
+.navbar.title {
+    height: 40px;
+    -webkit-app-region: drag;
+}
+
 main {
-    height: calc(100% - 60px);
+    height: calc(100% - 100px);
+}
+
+main .col {
+    height: 100%;
+}
+
+main textarea {
+    width: 100%;
+    resize: none;
+    white-space: nowrap;
+}
+
+main textarea.full {
+    height: 100%;
+}
+
+main textarea.headers {
+    height: 30%;
+    margin: 5px 0;
+}   
+
+main textarea.body {
+    height: calc(70% - 48px);
+}
+
+.code-font {
+    font-family: "consolas"
 }

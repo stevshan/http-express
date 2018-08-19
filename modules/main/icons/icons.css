@@ -1,0 +1,53 @@
+ @font-face {
+   font-family: "Font Awesome 5 Free";
+   font-style: normal;
+   font-weight: 400;
+   src: url("fa-regular-400.ttf") format("truetype"),
+        url("fa-regular-400.woff2") format("woff2"), 
+        url("fa-regular-400.woff") format("woff"), 
+        url("fa-regular-400.svg#fontawesome") format("svg"); 
+}
+
+.icons {
+    font-family: "Font Awesome 5 Free";
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+
+.icons.i-close::before {
+    content: "\f410";
+}
+
+.icons.i-maximize::before {
+    content: "\f2d0";
+}
+
+.icons.i-minimize::before {
+    content: "\f2d1";
+}
+
+.icons.i-restore::before {
+    content: "\f2d2";
+}
+
+.icons.i-about::before {
+    content: "\f059";
+}

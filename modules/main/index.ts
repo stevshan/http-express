@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See License file under the project root for license information.
 //-----------------------------------------------------------------------------
 import { IModuleInfo, IModule, IModuleManager } from "http-express.module-manager";
-import { MenuItemConstructorOptions } from "electron";
+import { MenuItemConstructorOptions, BrowserWindowConstructorOptions } from "electron";
 
 import { electron } from "../../utilities/electron-adapter";
 import * as appUtils from "../../utilities/appUtils";
@@ -40,8 +40,15 @@ async function startup(): Promise<void> {
 
     const mainWindow =
         await moduleManager.getComponentAsync(
-            "browser-window");
+            "browser-window",
+            <BrowserWindowConstructorOptions>{
+                fullscreenable: true,
+                frame: false,
+                minHeight: 600,
+                minWidth: 800
+            });
 
+    mainWindow.setMenuBarVisibility(false);
     mainWindow.webContents.openDevTools();
     mainWindow.loadURL(appUtils.local("./main.html"));
 
