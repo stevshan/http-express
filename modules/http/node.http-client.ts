@@ -9,8 +9,11 @@ import {
     IRequestOptions,
     ServerCertValidator,
     IHttpRequest,
-    IHttpResponse
+    IHttpResponse,
+    IHttpClient
 } from "http-express.http";
+
+import { IDictionary } from "http-express.common";
 
 import { ILog } from "http-express.logging";
 import {
@@ -24,13 +27,20 @@ import * as https from "https";
 import * as http from "http";
 import * as url from "url";
 import * as crypto from "crypto";
-import { PeerCertificate } from "tls";
+import { PeerCertificate, TLSSocket } from "tls";
 
 import { HttpProtocols, SslProtocols } from "./common";
 import * as utils from "../../utilities/utils";
 import HttpClientBase from "./http-client-base";
 import { HttpRequestProxy } from "./http-request-proxy";
 import { HttpResponseProxy } from "./http-response-proxy";
+
+const CertErrors = {
+    CERT_HAS_EXPIRED: true,
+    DEPTH_ZERO_SELF_SIGNED_CERT: true,
+    ERR_TLS_CERT_ALTNAME_INVALID: true,
+    UNABLE_TO_VERIFY_LEAF_SIGNATURE: true
+};
 
 function objectToString(obj: any): string {
     const propertyNames = Object.getOwnPropertyNames(obj);
@@ -63,6 +73,8 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
 
     private readonly serverCertValidator: ServerCertValidator;
 
+    private readonly trustedServerCerts: IDictionary<boolean>;
+
     constructor(
         log: ILog,
         certLoader: ICertificateLoader,
@@ -70,12 +82,57 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
         serverCertValidator: ServerCertValidator,
         requestAsyncProcessor: RequestAsyncProcessor,
         responseAsyncHandler: ResponseAsyncHandler) {
+
+        if (Function.isFunction(serverCertValidator)) {
+            responseAsyncHandler =
+                async (client: IHttpClient, log: ILog, requestOptions: IRequestOptions, requestData: any, response: IHttpResponse): Promise<any> => {
+                    const httpResponse = <http.IncomingMessage>((<HttpResponseProxy>response).httpResponse);
+
+                    if (httpResponse.connection["authorized"] === false
+                        && httpResponse.connection["authorizationError"] in CertErrors) {
+                        const tlsSocket = <TLSSocket>httpResponse.connection;
+                        const certInfo = toCertificateInfo(tlsSocket.getPeerCertificate());
+
+                        if (this.trustedServerCerts[certInfo.thumbprint] === false) {
+                            const err = new Error("Invalid server certificate.");
+
+                            err["code"] = httpResponse.connection["authorizationError"];
+
+                            return Promise.reject(err);
+                        } else {
+                            const validation = await this.serverCertValidator(tlsSocket["servername"], certInfo);
+
+                            if (validation === undefined) {
+                                this.trustedServerCerts[certInfo.thumbprint] = true;
+
+                                return client.requestAsync(requestOptions, requestData);
+                            } else {
+                                this.trustedServerCerts[certInfo.thumbprint] = false;
+
+                                const err = new Error("Invalid server certificate.");
+
+                                err["code"] = httpResponse.connection["authorizationError"];
+
+                                return Promise.reject(err);
+                            }
+                        }
+                    }
+
+                    if (Function.isFunction(responseAsyncHandler)) {
+                        return responseAsyncHandler(client, log, requestOptions, requestData, response);
+                    }
+
+                    return response;
+                };
+        }
+
         super(log, protocol, requestAsyncProcessor, responseAsyncHandler);
 
         if (!Object.isObject(certLoader)) {
             throw new Error("certLoader must be supplied.");
         }
 
+        this.trustedServerCerts = {};
         this.serverCertValidator = serverCertValidator;
         this.certLoader = certLoader;
     }
@@ -120,12 +177,8 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
 
         if (Function.isFunction(this.serverCertValidator)) {
             options.rejectUnauthorized = false;
-            options["checkServerIdentity"] =
-                (serverName, cert) => {
-                    return this.serverCertValidator(serverName, toCertificateInfo(cert));
-                };
         }
-
+        
         return options;
     }
 
