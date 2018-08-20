@@ -74,10 +74,11 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text code-font" id="labelUserAgent">User-Agent</span>
                             </div>
-                            <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent" aria-describedby="labelUserAgent">
+                            <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent"
+                                aria-describedby="labelUserAgent">
                         </div>
-                        <textarea id="textHeaders" class="form-control headers code-font" v-model="headers" placeholder="Request headers"></textarea>
-                        <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="Request body"></textarea>
+                        <textarea id="textHeaders" class="form-control headers code-font" v-model="headers" placeholder="(Request headers)"></textarea>
+                        <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
                     <div class="col px-1">
                         <textarea id="textResponse" class="form-control full code-font" readonly placeholder="Response"></textarea>
@@ -85,6 +86,68 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div class="modal fade" id="Modal-SelectCertificates" tabindex="-1" role="dialog" aria-labelledby="Modal-SelectCertificates-Title"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="Modal-SelectCertificates-Title">Client Certificate Required</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        <a v-for="certInfo in certInfos" href="#" class="list-group-item list-group-item-action flex-column align-items-start" @click="updateSelectedCert(certInfo)"
+                            :class="{ active: selectedCertInfo && selectedCertInfo.thumbprint === certInfo.thumbprint }">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.subjectName" aria-describedby="Modal-SelectCertificates-LabelSubject">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelIssuer">Issuer</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Issuer" v-model="certInfo.issuerName" aria-describedby="Modal-SelectCertificates-LabelIssuer">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSerial">Serial</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Serial Number" v-model="certInfo.serialNumber"
+                                    aria-describedby="Modal-SelectCertificates-LabelSerial">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidFrom">Valid from</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate starts from" v-model="certInfo.validStart" aria-describedby="Modal-SelectCertificates-LabelValidFrom">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidTo">Valid to</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate end util" v-model="certInfo.validExpiry" aria-describedby="Modal-SelectCertificates-LabelValidTo">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.thumbprint" aria-describedby="Modal-SelectCertificates-LabelSubject">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Select</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript" src="./main.js"></script>

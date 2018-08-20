@@ -10,7 +10,7 @@ import * as semver from "semver";
 import * as url from "url";
 import { Buffer } from "buffer";
 import * as $ from "jquery";
-import { ICertificateInfo } from "http-express.cert";
+import { ICertificateInfo, ICertificate } from "http-express.cert";
 import { electron } from "../../../utilities/electron-adapter";
 
 const Vue = require("vue/dist/vue.min.js");
@@ -145,46 +145,81 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
             cancelId: 1
         });
 
-    if (response === 0) {
-        this.trustedServerCerts[cert.thumbprint] = true;
-        return;
-    } else {
-        this.trustedServerCerts[cert.thumbprint] = false;
+    if (response !== 0) {
         return new Error("Not trusted");
     }
 }
 
-const vm = new Vue({
-    el: "#HttpClient",
-    data: {
-        url: "http://example.com",
-        method: "GET",
-        headers: "",
-        body: "",
-        userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
-        httpClientPromise:
-            moduleManager.getComponentAsync(
-                "http.http-client",
-                (serverName, certInfo) => vm.validateServerCert(serverName, certInfo))
-    },
-    computed: {
-        protocol: function (): string {
-            return `${this.method} ${url.parse(this.url).path} HTTP/1.1`;
+function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>): Promise<ICertificate | ICertificateInfo> {
+    return new Promise<ICertificate | ICertificateInfo>((resolve, reject) => {
+        const vm = new Vue({
+            el: "#Modal-SelectCertificates",
+            data: {
+                certInfos: certInfos,
+                selectedCertInfo: null
+            },
+            methods: {
+                onModalHidden: function () {
+                    $("#Modal-SelectCertificates").modal("dispose");
+                    resolve(null);
+                    vm.$destroy();
+                },
+
+                updateSelectedCert: function (certInfo: ICertificateInfo): void {
+                    this.selectedCertInfo = certInfo;
+                },
+
+                selectCert: function (): void {
+                    $("#Modal-SelectCertificates").modal("dispose");
+                    resolve(this.selectedCertInfo);
+                    vm.$destroy();
+                }
+            }
+        });
+
+        $("#Modal-SelectCertificates").on("hide.bs.modal", function (e) {
+            vm.onModalHidden();
+        });
+
+        $("#Modal-SelectCertificates").modal();
+    });
+}
+
+const vm = (async () => {
+    const httpClientBuilder = await moduleManager.getComponentAsync("http.node-client-builder", validateServerCert);
+    const handleCertResponse = await moduleManager.getComponentAsync("http.response-handlers.handle-auth-cert", selectClientCertAsync);
+
+    await httpClientBuilder.handleResponseAsync(handleCertResponse);
+
+    return new Vue({
+        el: "#HttpClient",
+        data: {
+            url: "http://example.com",
+            method: "GET",
+            headers: "",
+            body: "",
+            userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
+            httpClientPromise: httpClientBuilder.buildAsync("*")
         },
-        host: function (): string {
-            return `Host: ${url.parse(this.url).host}`;
+        computed: {
+            protocol: function (): string {
+                return `${this.method} ${url.parse(this.url).path} HTTP/1.1`;
+            },
+            host: function (): string {
+                return `Host: ${url.parse(this.url).host}`;
+            },
+            noBodyAllowed: function (): boolean {
+                return this.method === "GET" || this.method === "DELETE";
+            }
         },
-        noBodyAllowed: function (): boolean {
-            return this.method === "GET" || this.method === "DELETE";
+        methods: {
+            updateMethod: function (method: string): void {
+                this.method = method;
+            },
+            sendRequestAsync: sendRequestAsync,
+            validateServerCert: validateServerCert
         }
-    },
-    methods: {
-        updateMethod: function (method: string): void {
-            this.method = method;
-        },
-        sendRequestAsync: sendRequestAsync,
-        validateServerCert: validateServerCert
-    }
-});
+    });
+})();
 
 export default vm;
