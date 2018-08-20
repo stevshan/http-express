@@ -37,3 +37,12 @@ main textarea.body {
 .code-font {
     font-family: "consolas"
 }
+
+.code-label {
+    display: inline-block;
+    text-align: right;
+}
+
+.width-75 {
+    width: 75px;
+}

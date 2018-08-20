@@ -46,7 +46,7 @@ export default function handleCertAsync(
             const validCertInfos = (await pkiCertSvc.getCertificateInfosAsync("My")).filter((certInfo) => certInfo.hasPrivateKey);
             let selectedCert = await selectClientCertAsyncHandler(requestOptions.url, validCertInfos);
 
-            if (!selectedCert) {
+            if (selectedCert) {
                 if (isCertificateInfo(selectedCert)) {
                     log.writeInfoAsync(`Client certificate (thumbprint:${selectedCert.thumbprint}) is selected.`);
                     selectedCert = await pkiCertSvc.getCertificateAsync(selectedCert);
@@ -59,11 +59,7 @@ export default function handleCertAsync(
                     throw new Error(`Invalid client certificate: ${JSON.stringify(selectedCert, null, 4)}`);
                 }
 
-                const clientRequestOptions = await client.defaultRequestOptions;
-
-                clientRequestOptions.clientCert = selectedCert;
-
-                await client.updateDefaultRequestOptionsAsync(clientRequestOptions);
+                requestOptions.clientCert = selectedCert;
 
                 log.writeInfoAsync("Re-sending the HTTPS request ...");
                 return client.requestAsync(requestOptions, requestData);

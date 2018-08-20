@@ -6,6 +6,7 @@
 import { IDictionary } from "http-express.common";
 import { IHttpResponse } from "http-express.http";
 
+import * as uuidv4 from "uuid/v4";
 import * as semver from "semver";
 import * as url from "url";
 import { Buffer } from "buffer";
@@ -20,6 +21,7 @@ function disableInputs(reset: boolean = false): void {
     $("#inputUrl").prop("disabled", !reset);
     $("#btnSend").prop("disabled", !reset);
     $("#textHeaders").prop("disabled", !reset);
+    $("#inputUserAgent").prop("disabled", !reset);
 
     const method = $("#btnMethod").text();
 
@@ -28,6 +30,12 @@ function disableInputs(reset: boolean = false): void {
 
 async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> {
     let response: string = "";
+
+    if (!Function.isFunction(httpResponse.readAsync)) {
+        response += httpResponse["message"];
+        $("#textResponse").val(response);
+        return;
+    }
 
     const httpVersion = await httpResponse.httpVersion;
     const statusCode = await httpResponse.statusCode;
@@ -67,7 +75,7 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
         }
 
         response += data.toString(encoding || "hex");
-    } else {
+    } else if (data) {
         response += data;
     }
 
@@ -76,6 +84,8 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
 
 function sendRequestAsync(): Promise<void> {
     disableInputs();
+
+    this.inProgress = true;
 
     const headers: IDictionary<string | Array<string>> = {};
     const rawHeaders = this.headers.split("\r\n");
@@ -121,7 +131,8 @@ function sendRequestAsync(): Promise<void> {
                 },
                 this.body || null))
         .then((response) => displayResponseAsync(response))
-        .then(() => disableInputs(true));
+        .then(() => disableInputs(true))
+        .then(() => this.inProgress = false);
 }
 
 function validateServerCert(serverName: string, cert: ICertificateInfo): Error | void {
@@ -152,36 +163,55 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
 
 function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>): Promise<ICertificate | ICertificateInfo> {
     return new Promise<ICertificate | ICertificateInfo>((resolve, reject) => {
-        const vm = new Vue({
-            el: "#Modal-SelectCertificates",
-            data: {
-                certInfos: certInfos,
-                selectedCertInfo: null
-            },
-            methods: {
-                onModalHidden: function () {
-                    $("#Modal-SelectCertificates").modal("dispose");
-                    resolve(null);
-                    vm.$destroy();
-                },
+        const elementId: string = `div-${uuidv4().replace(/\-/gi, "")}`;
 
-                updateSelectedCert: function (certInfo: ICertificateInfo): void {
-                    this.selectedCertInfo = certInfo;
-                },
+        $("body").append($(`<div id="${elementId}"></div>`));
 
-                selectCert: function (): void {
-                    $("#Modal-SelectCertificates").modal("dispose");
-                    resolve(this.selectedCertInfo);
-                    vm.$destroy();
+        try {
+            const vm = new Vue({
+                el: `#${elementId}`,
+                template: "#Template-Modal-SelectCertificates",
+                data: {
+                    id: elementId,
+                    certInfos: certInfos.filter((certInfo) => certInfo.hasPrivateKey),
+                    selectedCertInfo: null
+                },
+                methods: {
+                    dispose: function () {
+                        $(`#${this.id}`).modal("dispose");
+                        this.$destroy();
+                        $(`#${this.id}+div.modal-backdrop`).remove();
+                        $(`#${this.id}`).remove();
+                    },
+                    onModalHidden: function () {
+                        this.dispose();
+                        resolve(null);
+                    },
+
+                    updateSelectedCert: function (certInfo: ICertificateInfo): void {
+                        this.selectedCertInfo = certInfo;
+                    },
+
+                    selectCert: function (): void {
+                        this.dispose();
+                        resolve(this.selectedCertInfo);
+                    }
+                },
+                filters: {
+                    date: function (dateValue: string): string {
+                        return (new Date(dateValue)).toLocaleString();
+                    }
                 }
-            }
-        });
+            });
 
-        $("#Modal-SelectCertificates").on("hide.bs.modal", function (e) {
-            vm.onModalHidden();
-        });
+            $(`#${vm.id}`).on("hidden.bs.modal", function (e) {
+                vm.onModalHidden();
+            });
 
-        $("#Modal-SelectCertificates").modal();
+            $(`#${vm.id}`).modal();
+        } catch (err) {
+            console.log(err);
+        }
     });
 }
 
@@ -198,6 +228,7 @@ const vm = (async () => {
             method: "GET",
             headers: "",
             body: "",
+            inProgress: false,
             userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
             httpClientPromise: httpClientBuilder.buildAsync("*")
         },
