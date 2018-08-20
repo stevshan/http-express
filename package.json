@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/stevshan/http-express#readme",
   "devDependencies": {
-    "@types/angular": "^1.6.50",
     "@types/bootstrap": "^4.1.2",
     "@types/jquery": "^3.3.5",
     "del": "^3.0.0",
@@ -31,7 +30,6 @@
     "typescript": "^3.0.1"
   },
   "dependencies": {
-    "angular": "^1.7.3",
     "applicationinsights": "^1.0.3",
     "bootstrap": "^4.1.3",
     "jquery": "^3.3.1",
@@ -39,7 +37,8 @@
     "semver": "^5.5.0",
     "tar": "^4.4.6",
     "tmp": "0.0.33",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "vue": "^2.5.17"
   },
   "publishDependencies": {
     "electron-installer-linux": {

@@ -7,7 +7,8 @@
         "sourceMap": true,
         "declaration": false,
         "noUnusedLocals": true,
-        "noImplicitReturns": true
+        "noImplicitReturns": true,
+        "allowSyntheticDefaultImports": true
     },
     "exclude": [
         "build/",

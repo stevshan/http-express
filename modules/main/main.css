@@ -31,7 +31,7 @@ main textarea.headers {
 }   
 
 main textarea.body {
-    height: calc(70% - 91px);
+    height: calc(70% - 134px);
 }
 
 .code-font {

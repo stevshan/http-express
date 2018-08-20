@@ -3,37 +3,29 @@
 // Licensed under the MIT License. See License file under the project root for license information.
 //-----------------------------------------------------------------------------
 
-import * as ng from "angular";
-
 import { electron } from "../../../utilities/electron-adapter";
 
-interface ITitleBarScope extends ng.IScope {
-    minimizeWindow: () => void;
-    maximizeOrRestoreWindow: () => void;
-    closeWindow: () => void;
-    isWindowMaximized: () => boolean;
-    
-    appVersion: string;
-}
+const Vue = require("vue/dist/vue.min.js");
 
-function maximizeOrRestoreWindow() {
-    const currentWindow = electron.remote.getCurrentWindow();
+const vm = new Vue({
+    el: "#TitleBar",
+    computed: {
+        isWindowMaximized: () => electron.remote.getCurrentWindow().isMaximized(),
+        appVersion: () => electron.app.getVersion()
+    },
+    methods: {
+        maximizeOrRestoreWindow: () => {
+            const currentWindow = electron.remote.getCurrentWindow();
 
-    if (currentWindow.isMaximized()) {
-        currentWindow.unmaximize();
-    } else {
-        currentWindow.maximize();
+            if (currentWindow.isMaximized()) {
+                currentWindow.unmaximize();
+            } else {
+                currentWindow.maximize();
+            }
+        },
+        minimizeWindow: () => electron.remote.getCurrentWindow().minimize(),
+        closeWindow: () => electron.remote.getCurrentWindow().close()
     }
-}
+});
 
-ng.module("http-express")
-    .controller("TitleBarController",
-        ["$scope",
-            ($scope: ITitleBarScope) => {
-                $scope.maximizeOrRestoreWindow = maximizeOrRestoreWindow;
-
-                $scope.appVersion = electron.app.getVersion();
-                $scope.minimizeWindow = () => electron.remote.getCurrentWindow().minimize();
-                $scope.closeWindow = () => electron.remote.getCurrentWindow().close();
-                $scope.isWindowMaximized = () => electron.remote.getCurrentWindow().isMaximized();
-            }]);
+export default vm;

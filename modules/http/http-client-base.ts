@@ -185,28 +185,29 @@ export default abstract class HttpClientBase<THttpRequestOptions> implements IHt
 
         this.log.writeInfoAsync(`[${requestId}] Creating request: HTTP ${requestOptions.method} => ${requestOptions.url}`);
         const request = this.makeRequest(httpRequestOptions);
+        let procesPipe: Promise<any> = Promise.resolve();
 
-        this.log.writeInfoAsync(`[${requestId}] Processing HTTP request ...`);
-        return this.requestAsyncProcessor(this, this.log, requestOptions, data, request)
+        if (!utils.isNullOrUndefined(this.requestAsyncProcessor)) {
+            this.log.writeInfoAsync(`[${requestId}] Processing HTTP request ...`);
+            procesPipe = procesPipe.then(() => this.requestAsyncProcessor(this, this.log, requestOptions, data, request));
+        }
+
+        return procesPipe
             .then(() => {
                 this.log.writeInfoAsync(`[${requestId}] Sending HTTP request ...`);
                 return this.sendRequestAsync(request);
             })
             .then(
-                (response) => {
-                    this.log.writeInfoAsync(`[${requestId}] Received response: HTTP/${response.httpVersion} ${response.statusCode} ${response.statusMessage}`);
+                async (response) => {
+                    this.log.writeInfoAsync(`[${requestId}] Received response: HTTP/${await response.httpVersion} ${await response.statusCode} ${await response.statusMessage}`);
                     this.log.writeInfoAsync(`[${requestId}] Processing HTTP response ...`);
 
                     return this.responseAsyncHandler(this, this.log, requestOptions, data, response)
                         .then(
-                            async (result) => {
+                            (result) => {
                                 this.log.writeInfoAsync(`[${requestId}] Processing HTTP response completed.`);
 
-                                if (result !== response) {
-                                    await response.setDataAsync(result);
-                                }
-
-                                return response;
+                                return result;
                             },
                             (reason) => {
                                 this.log.writeErrorAsync(`[${requestId}] Failed to process HTTP response, error: ${reason}`);
@@ -216,7 +217,7 @@ export default abstract class HttpClientBase<THttpRequestOptions> implements IHt
                 },
                 (reason) => {
                     this.log.writeInfoAsync(`[${requestId}] Failed sending HTTP request: ${reason}`);
-                    
+
                     return reason;
                 });
     }

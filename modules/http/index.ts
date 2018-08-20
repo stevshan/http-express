@@ -5,17 +5,13 @@
 import { IModuleInfo, IModule } from "http-express.module-manager";
 import { ILog } from "http-express.logging";
 import { ICertificateLoader, IPkiCertificateService } from "http-express.cert";
-import { IHttpClient, IHttpClientBuilder, ServerCertValidator, RequestAsyncProcessor, ResponseAsyncHandler } from "http-express.http";
-import { SelectClientCertAsyncHandler, IAadMetadata } from "http-express.http.auth";
-import { WebContents } from "electron";
+import { IHttpClient, IHttpClientBuilder, ServerCertValidator, ResponseAsyncHandler } from "http-express.http";
+import { SelectClientCertAsyncHandler } from "http-express.http.auth";
 
 import * as appUtils from "../../utilities/appUtils";
 
 import { HttpProtocols } from "./common";
-import handleJsonRequestAsync from "./request-handlers/handle-json";
-import handleJsonResponseAsync from "./response-handlers/handle-json";
 import handleRedirectionResponseAsync from "./response-handlers/handle-redirection";
-import handleAuthAadResponseAsync from "./response-handlers/handle-auth-aad";
 import handleAuthCertResponseAsync from "./response-handlers/handle-auth-cert";
 import NodeHttpClientBuilder from "./node.http-client-builder";
 import ElectronHttpClientBuilder from "./electron.http-client-builder";
@@ -28,12 +24,8 @@ function buildNodeHttpClientAsync(
     serverCertValidator?: ServerCertValidator)
     : Promise<IHttpClient> {
     return Promise.resolve(new NodeHttpClientBuilder(log, certLoader, serverCertValidator))
-        // Request handlers
-        .then(builder => builder.handleRequestAsync(handleJsonRequestAsync))
-
         // Response handlers
         .then(builder => builder.handleResponseAsync(handleRedirectionResponseAsync))
-        .then(builder => builder.handleResponseAsync(handleJsonResponseAsync))
         .then(builder => builder.buildAsync(protocol));
 }
 
@@ -43,12 +35,8 @@ function buildElectronHttpClientAsync(
     serverCertValidator?: ServerCertValidator)
     : Promise<IHttpClient> {
     return Promise.resolve(new ElectronHttpClientBuilder(log, serverCertValidator))
-        // Request handlers
-        .then(builder => builder.handleRequestAsync(handleJsonRequestAsync))
-
         // Response handlers
         .then(builder => builder.handleResponseAsync(handleRedirectionResponseAsync))
-        .then(builder => builder.handleResponseAsync(handleJsonResponseAsync))
         .then(builder => builder.buildAsync(protocol));
 }
 
@@ -111,28 +99,11 @@ function buildElectronHttpClientAsync(
             deps: ["logging"]
         })
 
-        // Request Handlers
-        .register<IAsyncHandlerConstructor<RequestAsyncProcessor>>({
-            name: "http.request-handlers.handle-json",
-            version: appUtils.getAppVersion(),
-            descriptor: async () => handleJsonRequestAsync
-        })
-
         // Response Handlers
         .register<IAsyncHandlerConstructor<ResponseAsyncHandler>>({
             name: "http.response-handlers.handle-redirection",
             version: appUtils.getAppVersion(),
             descriptor: async () => handleRedirectionResponseAsync
-        })
-        .register<IAsyncHandlerConstructor<ResponseAsyncHandler>>({
-            name: "http.response-handlers.handle-json",
-            version: appUtils.getAppVersion(),
-            descriptor: async () => handleJsonResponseAsync
-        })
-        .register<IAsyncHandlerConstructor<ResponseAsyncHandler>>({
-            name: "http.response-handlers.handle-auth-aad",
-            version: appUtils.getAppVersion(),
-            descriptor: (handlingHost: WebContents, aadMetadata: IAadMetadata) => handleAuthAadResponseAsync.bind(null, handlingHost, aadMetadata)
         })
         .register<IAsyncHandlerConstructor<ResponseAsyncHandler>>({
             name: "http.response-handlers.handle-auth-cert",
