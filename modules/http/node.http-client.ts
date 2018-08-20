@@ -142,7 +142,12 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
     protected async generateHttpRequestOptionsAsync(requestOptions: IRequestOptions): Promise<https.RequestOptions> {
         const options: https.RequestOptions = Object.create(this.httpRequestOptions);
 
-        Object.assign(options, url.parse(requestOptions.url));
+        const urlObj = url.parse(requestOptions.url);
+
+        options.hostname = urlObj.hostname;
+        options.port = urlObj.port;
+        options.protocol = urlObj.protocol;
+        options.path = urlObj.path;
 
         options.method = requestOptions.method;
 
