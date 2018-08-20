@@ -84,6 +84,8 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
         responseAsyncHandler: ResponseAsyncHandler) {
 
         if (Function.isFunction(serverCertValidator)) {
+            const nextHandler = responseAsyncHandler;
+
             responseAsyncHandler =
                 async (client: IHttpClient, log: ILog, requestOptions: IRequestOptions, requestData: any, response: IHttpResponse): Promise<any> => {
                     const httpResponse = <http.IncomingMessage>((<HttpResponseProxy>response).httpResponse);
@@ -99,7 +101,7 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
                             err["code"] = httpResponse.connection["authorizationError"];
 
                             return Promise.reject(err);
-                        } else {
+                        } else if (this.trustedServerCerts[certInfo.thumbprint] !== true) {
                             const validation = await this.serverCertValidator(tlsSocket["servername"], certInfo);
 
                             if (validation === undefined) {
@@ -118,8 +120,8 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
                         }
                     }
 
-                    if (Function.isFunction(responseAsyncHandler)) {
-                        return responseAsyncHandler(client, log, requestOptions, requestData, response);
+                    if (Function.isFunction(nextHandler)) {
+                        return nextHandler(client, log, requestOptions, requestData, response);
                     }
 
                     return response;
@@ -195,6 +197,12 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
             if (protocol === "http:" || protocol === "http") {
                 return new HttpRequestProxy(http.request(options));
             } else if (protocol === "https:" || protocol === "https") {
+                if (!options.port) {
+                    options.port = 443;
+                }
+
+                options.agent = new https.Agent(<https.AgentOptions>options);
+
                 return new HttpRequestProxy(https.request(options));
             } else {
                 throw new Error(`unsupported protocol: ${protocol}`);
