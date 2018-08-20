@@ -32,7 +32,7 @@ Object.isEmpty = (value: Object | object) => {
         if (key) {
             return false;
         }
-        
+
         return false;
     }
 
@@ -71,7 +71,7 @@ Object.isSerializable = (value: any) => {
             }
 
             return Function.isFunction(value["toJSON"])
-                || (Object.getPrototypeOf(value) === Object.prototype
+                || ((Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype)
                     && Object.values(value).every((propertyValue) => Object.isSerializable(propertyValue)));
 
         case "undefined":

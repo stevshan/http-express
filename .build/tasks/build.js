@@ -97,6 +97,11 @@ gulp.task("build:css",
         gulp.src(utilities.formGlobs("**/*.css"))
             .pipe(gulp.dest(buildInfos.paths.appDir)));
 
+gulp.task("build:ps1",
+    () =>
+        gulp.src(utilities.formGlobs("**/*.ps1"))
+            .pipe(gulp.dest(buildInfos.paths.appDir)));
+
 gulp.task("build:fonts",
     () =>
         gulp.src(utilities.formGlobs(["**/*.ttf", "**/*.woff", "**/*.woff2", "**/*.svg", "**/*.eot"]))
@@ -126,6 +131,7 @@ gulp.task("build",
         "build:css",
         "build:fonts",
         "build:html",
+        "build:ps1",
         "build:json",
         "build:img"));
 
@@ -135,6 +141,7 @@ gulp.task("build:debug",
         "build:html",
         "build:css",
         "build:fonts",
+        "build:ps1",
         "build:json",
         "build:img"));
 

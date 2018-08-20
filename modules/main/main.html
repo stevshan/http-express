@@ -1,4 +1,4 @@
-<html ng-app="http-express">
+<html>
 
 <head>
     <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -7,19 +7,19 @@
 </head>
 
 <body>
-    <nav class="navbar title px-1 navbar-expend navbar-dark bg-secondary justify-content-between" ng-controller="TitleBarController">
+    <nav id="TitleBar" class="navbar title px-1 navbar-expend navbar-dark bg-secondary justify-content-between">
         <a class="navbar-brand ml-2" href="#">
             <i class="icons i-http-express"></i>
             HTTP Express
         </a>
         <div class="btn-group mr-2" role="group">
-            <button type="button" class="btn btn-secondary" ng-click="about()" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button type="button" class="btn btn-secondary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="icons i-about"></i>
             </button>
             <div class="dropdown-menu dropdown-menu-right p-4 text-muted" style="width: 350px">
                 <h6 class="dropdown-header">About</h6>
                 <h5 class="px-4">HTTP Express</h5>
-                <p class="px-4">{{appVersion}}</p>
+                <p class="px-4" v-once>{{appVersion}}</p>
                 <br />
                 <p class="px-4">Copyright (c) 2018 Steven Shan. <br />All rights reserved.</p>
                 <p class="px-4">Licensed under the MIT License.</p>
@@ -28,18 +28,18 @@
                     <a href="https://github.com/stevshan/http-express" target="_blank">GitHub Repository</a>
                 </p>
             </div>
-            <button type="button" class="btn btn-secondary" ng-click="minimizeWindow()">
+            <button type="button" class="btn btn-secondary" @click="minimizeWindow">
                 <i class="icons i-minimize"></i>
             </button>
-            <button type="button" class="btn btn-secondary" ng-click="maximizeOrRestoreWindow()">
-                <i class="icons i-maximize" ng-class="{ 'i-restore': isWindowMaximized() }"></i>
+            <button type="button" class="btn btn-secondary" @click="maximizeOrRestoreWindow">
+                <i class="icons i-maximize" :class="{ 'i-restore': isWindowMaximized }"></i>
             </button>
-            <button type="button" class="btn btn-secondary" ng-click="closeWindow()">
+            <button type="button" class="btn btn-secondary" @click="closeWindow">
                 <i class="icons i-close"></i>
             </button>
         </div>
     </nav>
-    <div ng-controller="HttpClientController">
+    <div id="HttpClient">
         <nav class="navbar px-1 navbar-expand navbar-light bg-light">
             <div class="input-group was-validated">
                 <div class="input-group-prepend">
@@ -47,20 +47,20 @@
                         aria-expanded="false">{{method}}</button>
                     <div class="dropdown-menu">
                         <h6 class="dropdown-header">HTTP Methods</h6>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('GET')" ng-class="{ active: method === 'GET' }">GET</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('POST')" ng-class="{ active: method === 'POST' }">POST</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('PUT')" ng-class="{ active: method === 'PUT' }">PUT</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('DELETE')" ng-class="{ active: method === 'DELETE' }">DELETE</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('PATCH')" ng-class="{ active: method === 'PATCH' }">PATCH</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('OPTIONS')" ng-class="{ active: method === 'OPTIONS' }">OPTIONS</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('HEAD')" ng-class="{ active: method === 'HEAD' }">HEAD</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('CONNECT')" ng-class="{ active: method === 'CONNECT' }">CONNECT</a>
-                        <a class="dropdown-item" href="#" ng-click="updateMethod('TRACE')" ng-class="{ active: method === 'TRACE' }">TRACE</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('GET')" :class="{ active: method === 'GET' }">GET</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('POST')" :class="{ active: method === 'POST' }">POST</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('PUT')" :class="{ active: method === 'PUT' }">PUT</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('DELETE')" :class="{ active: method === 'DELETE' }">DELETE</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('PATCH')" :class="{ active: method === 'PATCH' }">PATCH</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('OPTIONS')" :class="{ active: method === 'OPTIONS' }">OPTIONS</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('HEAD')" :class="{ active: method === 'HEAD' }">HEAD</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('CONNECT')" :class="{ active: method === 'CONNECT' }">CONNECT</a>
+                        <a class="dropdown-item" href="#" @click="updateMethod('TRACE')" :class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
-                <input id="inputUrl" type="url" class="form-control code-font" ng-model="url" required>
+                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" required>
                 <div class="input-group-append">
-                    <button id="btnSend" class="btn btn-secondary" type="submit" ng-click="sendRequest()">Send</button>
+                    <button id="btnSend" class="btn btn-secondary" type="submit" @click="sendRequestAsync()">Send</button>
                 </div>
             </div>
         </nav>
@@ -68,10 +68,17 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col px-1">
-                        <input type="text" class="form-control code-font" style="margin-bottom: 5px" ng-model="protocol" readonly>
-                        <input type="text" class="form-control code-font" ng-model="host" readonly>
-                        <textarea id="textHeaders" class="form-control headers code-font" ng-model="headers" placeholder="Request headers"></textarea>
-                        <textarea id="textBody" class="form-control body code-font" ng-model="body" placeholder="Request body"></textarea>
+                        <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="protocol" readonly>
+                        <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="host" readonly>
+                        <div class="input-group" style="margin-bottom: 5px">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text code-font" id="labelUserAgent">User-Agent</span>
+                            </div>
+                            <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent"
+                                aria-describedby="labelUserAgent">
+                        </div>
+                        <textarea id="textHeaders" class="form-control headers code-font" v-model="headers" placeholder="(Request headers)"></textarea>
+                        <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
                     <div class="col px-1">
                         <textarea id="textResponse" class="form-control full code-font" readonly placeholder="Response"></textarea>
@@ -79,6 +86,68 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div class="modal fade" id="Modal-SelectCertificates" tabindex="-1" role="dialog" aria-labelledby="Modal-SelectCertificates-Title"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="Modal-SelectCertificates-Title">Client Certificate Required</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        <a v-for="certInfo in certInfos" href="#" class="list-group-item list-group-item-action flex-column align-items-start" @click="updateSelectedCert(certInfo)"
+                            :class="{ active: selectedCertInfo && selectedCertInfo.thumbprint === certInfo.thumbprint }">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.subjectName" aria-describedby="Modal-SelectCertificates-LabelSubject">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelIssuer">Issuer</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Issuer" v-model="certInfo.issuerName" aria-describedby="Modal-SelectCertificates-LabelIssuer">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSerial">Serial</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Serial Number" v-model="certInfo.serialNumber"
+                                    aria-describedby="Modal-SelectCertificates-LabelSerial">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidFrom">Valid from</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate starts from" v-model="certInfo.validStart" aria-describedby="Modal-SelectCertificates-LabelValidFrom">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidTo">Valid to</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate end util" v-model="certInfo.validExpiry" aria-describedby="Modal-SelectCertificates-LabelValidTo">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
+                                </div>
+                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.thumbprint" aria-describedby="Modal-SelectCertificates-LabelSubject">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Select</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript" src="./main.js"></script>

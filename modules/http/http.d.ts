@@ -13,36 +13,36 @@ declare module "http-express.module-manager" {
     } from "http-express.http";
 
     import { WebContents } from "electron";
-    import { IAsyncHandlerConstructor } from "http-express.common";
+    import { IAsyncHandlerConstructor, IDisposable } from "http-express.common";
     import { SelectClientCertAsyncHandler, IAadMetadata } from "http-express.http.auth";
 
     export interface IModuleManager {
-        getComponentAsync(componentIdentity: "http.http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
-        getComponentAsync(componentIdentity: "http.https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
+        getComponentAsync(componentIdentity: "http.http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
+        getComponentAsync(componentIdentity: "http.https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
 
-        getComponentAsync(componentIdentity: "http.node-http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
-        getComponentAsync(componentIdentity: "http.node-https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
+        getComponentAsync(componentIdentity: "http.node-http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
+        getComponentAsync(componentIdentity: "http.node-https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
 
-        getComponentAsync(componentIdentity: "http.electron-http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
-        getComponentAsync(componentIdentity: "http.electron-https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient>;
+        getComponentAsync(componentIdentity: "http.electron-http-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
+        getComponentAsync(componentIdentity: "http.electron-https-client", serverCertValidator?: ServerCertValidator): Promise<IHttpClient & IDisposable>;
 
-        getComponentAsync(componentIdentity: "http.client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder>;
-        getComponentAsync(componentIdentity: "http.node-client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder>;
-        getComponentAsync(componentIdentity: "http.electron-client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder>;
+        getComponentAsync(componentIdentity: "http.client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder & IDisposable>;
+        getComponentAsync(componentIdentity: "http.node-client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder & IDisposable>;
+        getComponentAsync(componentIdentity: "http.electron-client-builder", serverCertValidator?: ServerCertValidator): Promise<IHttpClientBuilder & IDisposable>;
 
-        getComponentAsync(componentIdentity: "http.request-handlers.handle-json"): Promise<IAsyncHandlerConstructor<RequestAsyncProcessor>>;
+        getComponentAsync(componentIdentity: "http.request-handlers.handle-json"): Promise<IAsyncHandlerConstructor<RequestAsyncProcessor> & IDisposable>;
 
-        getComponentAsync(componentIdentity: "http.response-handlers.handle-redirection"): Promise<IAsyncHandlerConstructor<ResponseAsyncHandler>>;
-        getComponentAsync(componentIdentity: "http.response-handlers.handle-json"): Promise<IAsyncHandlerConstructor<ResponseAsyncHandler>>;
+        getComponentAsync(componentIdentity: "http.response-handlers.handle-redirection"): Promise<IAsyncHandlerConstructor<ResponseAsyncHandler> & IDisposable>;
+        getComponentAsync(componentIdentity: "http.response-handlers.handle-json"): Promise<IAsyncHandlerConstructor<ResponseAsyncHandler> & IDisposable>;
 
         getComponentAsync(componentIdentity: "http.response-handlers.handle-auth-cert",
             selectClientCertAsyncHandler: SelectClientCertAsyncHandler)
-            : Promise<IAsyncHandlerConstructor<ResponseAsyncHandler>>;
+            : Promise<IAsyncHandlerConstructor<ResponseAsyncHandler> & IDisposable>;
 
         getComponentAsync(componentIdentity: "http.response-handlers.handle-auth-aad",
             handlingHost: WebContents,
             aadMetadata: IAadMetadata)
-            : Promise<IAsyncHandlerConstructor<ResponseAsyncHandler>>;
+            : Promise<IAsyncHandlerConstructor<ResponseAsyncHandler> & IDisposable>;
     }
 }
 
@@ -58,7 +58,7 @@ declare module "http-express.http" {
         readonly httpVersion: Promise<string>;
         readonly statusCode: Promise<number>;
         readonly statusMessage: Promise<string>;
-        readonly headers: Promise<IDictionary<string>>;
+        readonly headers: Promise<IDictionary<string | Array<string>>>;
         readonly data: Promise<any>;
 
         setEncodingAsync(encoding: string): Promise<void>;

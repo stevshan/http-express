@@ -49,6 +49,7 @@ async function startup(): Promise<void> {
             });
 
     mainWindow.setMenuBarVisibility(false);
+    mainWindow.webContents.openDevTools();
     mainWindow.loadURL(appUtils.local("./main.html"));
 
     // Handle "window-all-closed" event.
