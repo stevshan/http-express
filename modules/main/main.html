@@ -19,8 +19,11 @@
             <div class="dropdown-menu dropdown-menu-right p-4 text-muted" style="width: 350px">
                 <h6 class="dropdown-header">About</h6>
                 <h5 class="px-4">HTTP Express</h5>
-                <p class="px-4" v-once>{{appVersion}}</p>
-                <br />
+                <p class="px-4">
+                    <span v-once>{{appVersion}}</span> <span class="loader" :class="{ 'd-none': !versionChecking }"></span>
+                    <a :href="latestVersionLink" target="_blank" :class="{ 'd-none': !hasNewVersion }"><span class="badge badge-secondary">upgrade</span></a>
+                    <span class="badge badge-success" :class="{ 'd-none': hasNewVersion || versionChecking }">latest</span>
+                </p>
                 <p class="px-4">Copyright (c) 2018 Steven Shan. <br />All rights reserved.</p>
                 <p class="px-4">Licensed under the MIT License.</p>
                 <p class="px-4">
@@ -82,7 +85,8 @@
                         <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
                     <div class="col-6 px-1">
-                        <input type="text" class="form-control code-font" placeholder="Search in response" v-model="search" style="margin-bottom: 5px" :disabled="String.isEmpty(response)">
+                        <input type="text" class="form-control code-font" placeholder="Search in response" v-model="search" style="margin-bottom: 5px"
+                            :disabled="String.isEmpty(response)">
                         <div class="response form-control">
                             <div class="highlights code-font" v-html="highlightedResponse"></div>
                         </div>

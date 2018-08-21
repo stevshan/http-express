@@ -5,7 +5,7 @@
             {
                 "name": "app-insights",
                 "component": "logging.logger.app-insights",
-                "instrumentationKey": "84c71119-d044-4bc2-86b3-d65a8968c241"
+                "instrumentationKey": "ef527253-e20f-4efd-85a6-a9bb9169984e"
             },
             {
                 "name": "console",
@@ -71,5 +71,6 @@
                 "url": ""
             }
         }
-    }
+    },
+    "latestVersionLink": "https://github.com/stevshan/http-express/releases/latest"
 }

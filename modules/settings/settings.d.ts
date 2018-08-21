@@ -18,10 +18,11 @@ declare module "http-express.settings" {
 }
 
 declare module "http-express.module-manager" {
+    import { IDisposable } from "http-express.common";
     import { ISettingsService, ISettings } from "http-express.settings";
 
     export interface IModuleManager {
-        getComponentAsync(componentIdentity: "settings.service"): Promise<ISettingsService>;
-        getComponentAsync(componentIdentity: "settings"): Promise<ISettings>;
+        getComponentAsync(componentIdentity: "settings.service"): Promise<ISettingsService & IDisposable>;
+        getComponentAsync(componentIdentity: "settings"): Promise<ISettings & IDisposable>;
     }
 }

@@ -20,6 +20,7 @@ function disableInputs(reset: boolean = false): void {
     $("#inputUrl").prop("disabled", !reset);
     $("#btnSend").prop("disabled", !reset);
     $("#textHeaders").prop("disabled", !reset);
+    $("#inputUserAgent").prop("disabled", !reset);
 
     const method = $("#btnMethod").text();
 
