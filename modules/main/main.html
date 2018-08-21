@@ -61,7 +61,7 @@
                         <a class="dropdown-item" href="#" @click="updateMethod('TRACE')" :class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
-                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" value="https://example.com" required>
+                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" @keyup.enter="sendRequestAsync()" value="https://example.com" required>
                 <div class="input-group-append">
                     <button id="btnSend" class="btn btn-secondary" style="padding-right: 24px" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">
                         <div class="loader" :class="{ invisible: !sendingRequest }"></div> <i class="icons i-send"></i>

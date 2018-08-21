@@ -121,6 +121,8 @@ async function sendRequestAsync(): Promise<void> {
             this.body = "";
         }
 
+        this.response = "";
+
         await this.httpClientPromise
             .then((httpClient) =>
                 httpClient.requestAsync(
