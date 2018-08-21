@@ -225,7 +225,7 @@ const vm = (async () => {
                 if (!String.isEmpty(this.search)) {
                     const encodedSearch = $("<div/>").text(this.search).html();
 
-                    encodedResponse = encodedResponse.replace(new RegExp(encodedSearch, "g"), "<mark>$&</mark>");
+                    encodedResponse = encodedResponse.replace(new RegExp(encodedSearch, "gi"), "<mark>$&</mark>");
                 }
 
                 return encodedResponse.replace(new RegExp("\n", "g"), "<br />");
