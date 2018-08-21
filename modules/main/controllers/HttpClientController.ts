@@ -185,6 +185,8 @@ function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>):
     });
 }
 
+const httpHeaderRegex = /^((\u0020*[^\(\)\<\>\@\,\;\:\\\"\/\[\]\?\=\{\}\u0020\u0000-\u001f\u007F]+\u0020*\:\u0020*[^\u0000-\u001f\u007F\u0009\u0020]*)*\n?)*$/;
+
 const vm = (async () => {
     const httpClientBuilder = await moduleManager.getComponentAsync("http.node-client-builder", validateServerCert);
     const handleCertResponse = await moduleManager.getComponentAsync("http.response-handlers.handle-auth-cert", selectClientCertAsync);
@@ -194,7 +196,7 @@ const vm = (async () => {
     return new Vue({
         el: "#HttpClient",
         data: {
-            url: "http://example.com",
+            url: "https://example.com",
             method: "GET",
             headers: "",
             body: "",
@@ -205,17 +207,39 @@ const vm = (async () => {
             protocol: function (): string {
                 return `${this.method} ${url.parse(this.url).path} HTTP/1.1`;
             },
+
             host: function (): string {
                 return `Host: ${url.parse(this.url).host}`;
             },
+
             noBodyAllowed: function (): boolean {
                 return this.method === "GET" || this.method === "DELETE";
             }
         },
+        watch: {
+            headers: function(oldHeaders: string, newHeaders: string): void {
+                if (!httpHeaderRegex.test(newHeaders)) {
+                    (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("invalid");
+                } else {
+                    (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("");
+                }
+            }
+        },
         methods: {
+            isInvalidToSend: function (): boolean {
+                const elInvalid = $(":invalid");
+
+                return elInvalid && elInvalid.length > 0 ? true : false;
+            },
+
+            isHeadersInvalid: function (): boolean {
+                return $("#textHeaders").is(":invalid");
+            },
+
             updateMethod: function (method: string): void {
                 this.method = method;
             },
+
             sendRequestAsync: sendRequestAsync,
             validateServerCert: validateServerCert
         }

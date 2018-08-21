@@ -58,9 +58,9 @@
                         <a class="dropdown-item" href="#" @click="updateMethod('TRACE')" :class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
-                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" required>
+                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" value="https://example.com" required>
                 <div class="input-group-append">
-                    <button id="btnSend" class="btn btn-secondary" type="submit" @click="sendRequestAsync()">Send</button>
+                    <button id="btnSend" class="btn btn-secondary" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">Send</button>
                 </div>
             </div>
         </nav>
@@ -77,7 +77,7 @@
                             <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent"
                                 aria-describedby="labelUserAgent">
                         </div>
-                        <textarea id="textHeaders" class="form-control headers code-font" v-model="headers" placeholder="(Request headers)"></textarea>
+                        <textarea id="textHeaders" class="form-control headers code-font" :class="{ 'is-invalid': isHeadersInvalid() }" v-model="headers" placeholder="(Request headers)"></textarea>
                         <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
                     <div class="col px-1">
