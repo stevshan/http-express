@@ -67,7 +67,7 @@
         <main>
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col px-1">
+                    <div class="col-6 px-1">
                         <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="protocol" readonly>
                         <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="host" readonly>
                         <div class="input-group" style="margin-bottom: 5px">
@@ -77,11 +77,15 @@
                             <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent"
                                 aria-describedby="labelUserAgent">
                         </div>
-                        <textarea id="textHeaders" class="form-control headers code-font" :class="{ 'is-invalid': isHeadersInvalid() }" v-model="headers" placeholder="(Request headers)"></textarea>
+                        <textarea id="textHeaders" class="form-control headers code-font" :class="{ 'is-invalid': isHeadersInvalid() }" v-model="headers"
+                            placeholder="(Request headers)"></textarea>
                         <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
-                    <div class="col px-1">
-                        <textarea id="textResponse" class="form-control full code-font" readonly placeholder="Response"></textarea>
+                    <div class="col-6 px-1">
+                        <input type="text" class="form-control code-font" placeholder="Search in response" v-model="search" style="margin-bottom: 5px" :disabled="String.isEmpty(response)">
+                        <div class="response form-control">
+                            <div class="highlights code-font" v-html="highlightedResponse"></div>
+                        </div>
                     </div>
                 </div>
             </div>

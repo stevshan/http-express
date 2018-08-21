@@ -71,7 +71,7 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
         response += data;
     }
 
-    $("#textResponse").val(response);
+    this.response = response;
 }
 
 function sendRequestAsync(): Promise<void> {
@@ -120,7 +120,7 @@ function sendRequestAsync(): Promise<void> {
                     headers: headers
                 },
                 this.body || null))
-        .then((response) => displayResponseAsync(response))
+        .then((response) => this.displayResponseAsync(response))
         .then(() => disableInputs(true));
 }
 
@@ -200,6 +200,8 @@ const vm = (async () => {
             method: "GET",
             headers: "",
             body: "",
+            search: "",
+            response: "",
             userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
             httpClientPromise: httpClientBuilder.buildAsync("*")
         },
@@ -214,10 +216,22 @@ const vm = (async () => {
 
             noBodyAllowed: function (): boolean {
                 return this.method === "GET" || this.method === "DELETE";
+            },
+
+            highlightedResponse: function (): string {
+                let encodedResponse = $("<div/>").text(this.response).html();
+
+                if (!String.isEmpty(this.search)) {
+                    const encodedSearch = $("<div/>").text(this.search).html();
+
+                    encodedResponse = encodedResponse.replace(new RegExp(encodedSearch, "g"), "<mark>$&</mark>");
+                }
+
+                return encodedResponse.replace(new RegExp("\n", "g"), "<br />");
             }
         },
         watch: {
-            headers: function(oldHeaders: string, newHeaders: string): void {
+            headers: function (oldHeaders: string, newHeaders: string): void {
                 if (!httpHeaderRegex.test(newHeaders)) {
                     (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("invalid");
                 } else {
@@ -240,6 +254,7 @@ const vm = (async () => {
                 this.method = method;
             },
 
+            displayResponseAsync: displayResponseAsync,
             sendRequestAsync: sendRequestAsync,
             validateServerCert: validateServerCert
         }

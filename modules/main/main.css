@@ -3,6 +3,10 @@
     -webkit-app-region: drag;
 }
 
+mark {
+    padding: 0 !important;
+}
+
 button {
     -webkit-app-region: no-drag;
 }
@@ -21,8 +25,10 @@ main textarea {
     white-space: pre;
 }
 
-main textarea.full {
-    height: 100%;
+main div.response {
+    height: calc(100% - 42px);
+    overflow: auto;
+    padding: 5px;
 }
 
 main textarea.headers {
