@@ -30,6 +30,13 @@ function disableInputs(reset: boolean = false): void {
 async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> {
     let response: string = "";
 
+    if (!Function.isFunction(httpResponse.readAsync)) {
+        response += httpResponse["message"];
+
+        this.response = response;
+        return;
+    }
+
     const httpVersion = await httpResponse.httpVersion;
     const statusCode = await httpResponse.statusCode;
     const statusMessage = await httpResponse.statusMessage;
@@ -75,54 +82,59 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
     this.response = response;
 }
 
-function sendRequestAsync(): Promise<void> {
+async function sendRequestAsync(): Promise<void> {
     disableInputs();
+    this.sendingRequest = true;
 
-    const headers: IDictionary<string | Array<string>> = {};
-    const rawHeaders = this.headers.split("\r\n");
+    try {
+        const headers: IDictionary<string | Array<string>> = {};
+        const rawHeaders = this.headers.split("\r\n");
 
-    for (let rawHeaderIndex = 0; rawHeaderIndex < rawHeaders.length - 1; rawHeaderIndex++) {
-        const headerPair = rawHeaders[rawHeaderIndex].split(":", 2);
-        const headerName = headerPair[0].trim();
-        const headerValue = headerPair[1].trim();
+        for (let rawHeaderIndex = 0; rawHeaderIndex < rawHeaders.length - 1; rawHeaderIndex++) {
+            const headerPair = rawHeaders[rawHeaderIndex].split(":", 2);
+            const headerName = headerPair[0].trim();
+            const headerValue = headerPair[1].trim();
 
-        if (headerName in headers) {
-            const existingHeaderValue = headers[headerName];
+            if (headerName in headers) {
+                const existingHeaderValue = headers[headerName];
 
-            if (Array.isArray(existingHeaderValue)) {
-                existingHeaderValue.push(headerValue);
+                if (Array.isArray(existingHeaderValue)) {
+                    existingHeaderValue.push(headerValue);
+                } else {
+                    const newHeaderValue = [];
+
+                    newHeaderValue.push(headers[headerName]);
+                    newHeaderValue.push(headerValue);
+
+                    headers[headerName] = newHeaderValue;
+                }
             } else {
-                const newHeaderValue = [];
-
-                newHeaderValue.push(headers[headerName]);
-                newHeaderValue.push(headerValue);
-
-                headers[headerName] = newHeaderValue;
+                headers[headerName] = headerValue;
             }
-        } else {
-            headers[headerName] = headerValue;
         }
-    }
 
-    if (!String.isEmptyOrWhitespace(this.userAgent)) {
-        headers["User-Agent"] = this.userAgent;
-    }
+        if (!String.isEmptyOrWhitespace(this.userAgent)) {
+            headers["User-Agent"] = this.userAgent;
+        }
 
-    if (this.method === "GET" || this.method === "DELETE") {
-        this.body = "";
-    }
+        if (this.method === "GET" || this.method === "DELETE") {
+            this.body = "";
+        }
 
-    return this.httpClientPromise
-        .then((httpClient) =>
-            httpClient.requestAsync(
-                {
-                    method: this.method,
-                    url: this.url,
-                    headers: headers
-                },
-                this.body || null))
-        .then((response) => this.displayResponseAsync(response))
-        .then(() => disableInputs(true));
+        await this.httpClientPromise
+            .then((httpClient) =>
+                httpClient.requestAsync(
+                    {
+                        method: this.method,
+                        url: this.url,
+                        headers: headers
+                    },
+                    this.body || null))
+            .then((response) => this.displayResponseAsync(response));
+    } finally {
+        disableInputs(true);
+        this.sendingRequest = false;
+    }
 }
 
 function validateServerCert(serverName: string, cert: ICertificateInfo): Error | void {
@@ -204,7 +216,8 @@ const vm = (async () => {
             search: "",
             response: "",
             userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
-            httpClientPromise: httpClientBuilder.buildAsync("*")
+            httpClientPromise: httpClientBuilder.buildAsync("*"),
+            sendingRequest: false
         },
         computed: {
             protocol: function (): string {
@@ -227,6 +240,14 @@ const vm = (async () => {
 
                     encodedResponse = encodedResponse.replace(new RegExp(encodedSearch, "gi"), "<mark>$&</mark>");
                 }
+
+                this.$nextTick(function () {
+                    const markEl = $("div.highlights mark");
+
+                    if (markEl && markEl.length > 0) {
+                        markEl[0].scrollIntoView();
+                    }
+                });
 
                 return encodedResponse.replace(new RegExp("\n", "g"), "<br />");
             }

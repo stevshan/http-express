@@ -5,6 +5,8 @@
 
 mark {
     padding: 0 !important;
+    background-color: #6c757d;
+    color: #fff;
 }
 
 button {
@@ -45,8 +47,8 @@ main textarea.body {
 }
 
 .loader {
-    border: 3px solid #f3f3f3; /* Light grey */
-    border-top: 3px solid #3498db; /* Blue */
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #555; 
     border-radius: 50%;
     width: 12px;
     height: 12px;

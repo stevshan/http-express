@@ -63,7 +63,9 @@
                 </div>
                 <input id="inputUrl" type="url" class="form-control code-font" v-model="url" value="https://example.com" required>
                 <div class="input-group-append">
-                    <button id="btnSend" class="btn btn-secondary" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">Send</button>
+                    <button id="btnSend" class="btn btn-secondary" style="padding-right: 24px" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">
+                        <div class="loader" :class="{ invisible: !sendingRequest }"></div> <i class="icons i-send"></i>
+                    </button>
                 </div>
             </div>
         </nav>
@@ -87,7 +89,7 @@
                     <div class="col-6 px-1">
                         <input type="text" class="form-control code-font" placeholder="Search in response" v-model="search" style="margin-bottom: 5px"
                             :disabled="String.isEmpty(response)">
-                        <div class="response form-control">
+                        <div class="response form-control bg-light">
                             <div class="highlights code-font" v-html="highlightedResponse"></div>
                         </div>
                     </div>
@@ -131,7 +133,8 @@
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidFrom">Valid from</span>
+                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidFrom">Valid from
+                                    </span>
                                 </div>
                                 <input type="text" class="form-control code-font" aria-label="Certificate starts from" v-model="certInfo.validStart" aria-describedby="Modal-SelectCertificates-LabelValidFrom">
                             </div>
