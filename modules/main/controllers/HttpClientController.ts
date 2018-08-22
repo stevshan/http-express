@@ -6,6 +6,7 @@
 import { IDictionary } from "http-express.common";
 import { IHttpResponse } from "http-express.http";
 
+import * as uuidv4 from "uuid/v4";
 import * as semver from "semver";
 import * as url from "url";
 import { Buffer } from "buffer";
@@ -75,7 +76,7 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
         }
 
         response += data.toString(encoding || "hex");
-    } else {
+    } else if (data) {
         response += data;
     }
 
@@ -167,36 +168,55 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
 
 function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>): Promise<ICertificate | ICertificateInfo> {
     return new Promise<ICertificate | ICertificateInfo>((resolve, reject) => {
-        const vm = new Vue({
-            el: "#Modal-SelectCertificates",
-            data: {
-                certInfos: certInfos,
-                selectedCertInfo: null
-            },
-            methods: {
-                onModalHidden: function () {
-                    $("#Modal-SelectCertificates").modal("dispose");
-                    resolve(null);
-                    vm.$destroy();
-                },
+        const elementId: string = `div-${uuidv4().replace(/\-/gi, "")}`;
 
-                updateSelectedCert: function (certInfo: ICertificateInfo): void {
-                    this.selectedCertInfo = certInfo;
-                },
+        $("body").append($(`<div id="${elementId}"></div>`));
 
-                selectCert: function (): void {
-                    $("#Modal-SelectCertificates").modal("dispose");
-                    resolve(this.selectedCertInfo);
-                    vm.$destroy();
+        try {
+            const vm = new Vue({
+                el: `#${elementId}`,
+                template: "#Template-Modal-SelectCertificates",
+                data: {
+                    id: elementId,
+                    certInfos: certInfos.filter((certInfo) => certInfo.hasPrivateKey),
+                    selectedCertInfo: null
+                },
+                methods: {
+                    dispose: function () {
+                        $(`#${this.id}`).modal("dispose");
+                        this.$destroy();
+                        $(`#${this.id}+div.modal-backdrop`).remove();
+                        $(`#${this.id}`).remove();
+                    },
+                    onModalHidden: function () {
+                        this.dispose();
+                        resolve(null);
+                    },
+
+                    updateSelectedCert: function (certInfo: ICertificateInfo): void {
+                        this.selectedCertInfo = certInfo;
+                    },
+
+                    selectCert: function (): void {
+                        this.dispose();
+                        resolve(this.selectedCertInfo);
+                    }
+                },
+                filters: {
+                    date: function (dateValue: string): string {
+                        return (new Date(dateValue)).toLocaleString();
+                    }
                 }
-            }
-        });
+            });
 
-        $("#Modal-SelectCertificates").on("hide.bs.modal", function (e) {
-            vm.onModalHidden();
-        });
+            $(`#${vm.id}`).on("hidden.bs.modal", function (e) {
+                vm.onModalHidden();
+            });
 
-        $("#Modal-SelectCertificates").modal();
+            $(`#${vm.id}`).modal();
+        } catch (err) {
+            console.log(err);
+        }
     });
 }
 

@@ -43,7 +43,7 @@
         </div>
     </nav>
     <div id="HttpClient">
-        <nav class="navbar px-1 navbar-expand navbar-light bg-light">
+        <nav class="navbar px-1 navbar-expand navbar-light bg-light d-flex flex-column">
             <div class="input-group was-validated">
                 <div class="input-group-prepend">
                     <button id="btnMethod" class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
@@ -61,12 +61,17 @@
                         <a class="dropdown-item" href="#" @click="updateMethod('TRACE')" :class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
-                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" @keyup.enter="sendRequestAsync()" value="https://example.com" required>
+                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" @keyup.enter="sendRequestAsync()" value="https://example.com"
+                    required>
                 <div class="input-group-append">
                     <button id="btnSend" class="btn btn-secondary" style="padding-right: 24px" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">
                         <div class="loader" :class="{ invisible: !sendingRequest }"></div> <i class="icons i-send"></i>
                     </button>
                 </div>
+            </div>
+            <div class="progress" style="height: 5px; width: 100%" :class="{ invisible: !sendingRequest }">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" aria-valuenow="1" aria-valuemin="0"
+                    aria-valuemax="1" style="width: 100%"></div>
             </div>
         </nav>
         <main>
@@ -98,68 +103,44 @@
         </main>
     </div>
 
-    <div class="modal fade" id="Modal-SelectCertificates" tabindex="-1" role="dialog" aria-labelledby="Modal-SelectCertificates-Title"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="Modal-SelectCertificates-Title">Client Certificate Required</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="list-group">
-                        <a v-for="certInfo in certInfos" href="#" class="list-group-item list-group-item-action flex-column align-items-start" @click="updateSelectedCert(certInfo)"
-                            :class="{ active: selectedCertInfo && selectedCertInfo.thumbprint === certInfo.thumbprint }">
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.subjectName" aria-describedby="Modal-SelectCertificates-LabelSubject">
-                            </div>
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelIssuer">Issuer</span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate Issuer" v-model="certInfo.issuerName" aria-describedby="Modal-SelectCertificates-LabelIssuer">
-                            </div>
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSerial">Serial</span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate Serial Number" v-model="certInfo.serialNumber"
-                                    aria-describedby="Modal-SelectCertificates-LabelSerial">
-                            </div>
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidFrom">Valid from
-                                    </span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate starts from" v-model="certInfo.validStart" aria-describedby="Modal-SelectCertificates-LabelValidFrom">
-                            </div>
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelValidTo">Valid to</span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate end util" v-model="certInfo.validExpiry" aria-describedby="Modal-SelectCertificates-LabelValidTo">
-                            </div>
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="Modal-SelectCertificates-LabelSubject">Subject</span>
-                                </div>
-                                <input type="text" class="form-control code-font" aria-label="Certificate Subject" v-model="certInfo.thumbprint" aria-describedby="Modal-SelectCertificates-LabelSubject">
-                            </div>
-                        </a>
+    <script type="text/x-template" id="Template-Modal-SelectCertificates">
+        <div class="modal fade" :id="id" tabindex="-1" role="dialog" :aria-labelledby="id + '-Title'"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" :id="id + '-Title'">HTTP 403: Client certificate required.</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Select</button>
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        <div class="list-group">
+                            <a v-for="certInfo in certInfos" href="#" class="list-group-item list-group-item-action flex-column align-items-start" @click="updateSelectedCert(certInfo)"
+                                :class="{ active: selectedCertInfo && selectedCertInfo.thumbprint === certInfo.thumbprint }">
+                                <h6>{{certInfo.subjectName}}</h6>
+                                <p class="code-font">
+                                    <span class="width-75 code-label">Issuer:</span> <span>{{certInfo.issuerName}}</span><br
+                                    />
+                                    <span class="width-75 code-label">Serial:</span> <span>{{certInfo.serialNumber}}</span><br
+                                    />
+                                    <span class="width-75 code-label">Starts:</span> <span>{{certInfo.validStart | date}}</span><br
+                                    />
+                                    <span class="width-75 code-label">Until:</span> <span>{{certInfo.validExpiry | date}}</span><br
+                                    />
+                                    <span class="width-75 code-label">Hash:</span> <span>{{certInfo.thumbprint}}</span><br />
+                                </p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" @click="selectCert">Select</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </script>
 
     <script type="text/javascript" src="./main.js"></script>
 </body>

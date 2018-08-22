@@ -95,13 +95,7 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
                         const tlsSocket = <TLSSocket>httpResponse.connection;
                         const certInfo = toCertificateInfo(tlsSocket.getPeerCertificate());
 
-                        if (this.trustedServerCerts[certInfo.thumbprint] === false) {
-                            const err = new Error("Invalid server certificate.");
-
-                            err["code"] = httpResponse.connection["authorizationError"];
-
-                            return Promise.reject(err);
-                        } else if (this.trustedServerCerts[certInfo.thumbprint] !== true) {
+                        if (this.trustedServerCerts[certInfo.thumbprint] !== true) {
                             const validation = await this.serverCertValidator(tlsSocket["servername"], certInfo);
 
                             if (validation === undefined) {
@@ -140,14 +134,18 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
     }
 
     protected async generateHttpRequestOptionsAsync(requestOptions: IRequestOptions): Promise<https.RequestOptions> {
-        const options: https.RequestOptions = Object.create(this.httpRequestOptions);
+        const options: https.RequestOptions = Object.create(null);
 
-        const urlObj = url.parse(requestOptions.url);
+        Object.assign(options, this.httpRequestOptions);
 
-        options.hostname = urlObj.hostname;
-        options.port = urlObj.port;
-        options.protocol = urlObj.protocol;
-        options.path = urlObj.path;
+        if (requestOptions.url) {
+            const urlObj = url.parse(requestOptions.url);
+
+            options.hostname = urlObj.hostname;
+            options.port = urlObj.port;
+            options.protocol = urlObj.protocol;
+            options.path = urlObj.path;
+        }
 
         options.method = requestOptions.method;
 
@@ -185,7 +183,7 @@ export default class HttpClient extends HttpClientBase<http.RequestOptions> {
         if (Function.isFunction(this.serverCertValidator)) {
             options.rejectUnauthorized = false;
         }
-        
+
         return options;
     }
 

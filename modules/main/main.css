@@ -46,6 +46,15 @@ main textarea.body {
     font-family: "consolas"
 }
 
+.code-label {
+    display: inline-block;
+    text-align: right;
+}
+
+.width-75 {
+    width: 75px;
+}
+
 .loader {
     border: 3px solid #f3f3f3;
     border-top: 3px solid #555; 
