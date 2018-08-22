@@ -188,6 +188,10 @@ function createClientCertSelectionVue(
         computed: {
             keyFileRequired: function (): boolean {
                 return this.certFilePath && !(/\.pfx$/i.test(this.certFilePath));
+            },
+
+            certSelected: function (): boolean {
+                return this.selectedCertInfo || this.certFilePath;
             }
         },
         methods: {

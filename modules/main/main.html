@@ -143,21 +143,21 @@
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" required v-model="certFilePath" readonly placeholder="Path of the client certificate" aria-label="Path of the client certificate" :aria-describedby="id + '-OpenCertFile'">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenCertFile'" @click="browseCertFiles()">Browse ...</button>
+                                        <button class="btn btn-secondary" type="button" :id="id + '-OpenCertFile'" @click="browseCertFiles()">Browse ...</button>
                                     </div>
                                 </div>
                                 <div class="input-group mb-3" :class="{ 'd-none': !keyFileRequired }">
                                     <input type="text" class="form-control" required v-model="keyFilePath" readonly placeholder="Path of the key file for the client certificate" aria-label="Path of the key file for the client certificate" :aria-describedby="id + '-OpenKeyFile'">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenKeyFile'" @click="browseKeyFiles()">Browse ...</button>
+                                        <button class="btn btn-secondary" type="button" :id="id + '-OpenKeyFile'" @click="browseKeyFiles()">Browse ...</button>
                                     </div>
                                 </div>
                             </a>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="selectCert">Select</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" @click="selectCert" :disabled="!certSelected">Select</button>
                     </div>
                 </div>
             </div>
@@ -198,7 +198,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="selectCert">OK</button>
+                        <button type="button" class="btn btn-primary" @click="selectCert" :disabled="!certSelected">OK</button>
                     </div>
                 </div>
             </div>
