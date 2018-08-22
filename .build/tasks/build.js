@@ -111,7 +111,7 @@ gulp.task("build:fonts",
 gulp.task("build:img",
     () =>
         gulp.src(utilities.formGlobs(["icons/**/*.*"]))
-            .pipe(gulp.dest(path.join(buildInfos.paths.appDir, "icons"))));
+            .pipe(gulp.dest(process.platform === "win32" ? buildInfos.paths.appDir : path.join(buildInfos.paths.appDir, "icons"))));
 
 gulp.task("build:json",
     () =>
