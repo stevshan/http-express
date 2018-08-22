@@ -19,8 +19,11 @@
             <div class="dropdown-menu dropdown-menu-right p-4 text-muted" style="width: 350px">
                 <h6 class="dropdown-header">About</h6>
                 <h5 class="px-4">HTTP Express</h5>
-                <p class="px-4" v-once>{{appVersion}}</p>
-                <br />
+                <p class="px-4">
+                    <span v-once>{{appVersion}}</span> <span class="loader" :class="{ 'd-none': !versionChecking }"></span>
+                    <a :href="latestVersionLink" target="_blank" :class="{ 'd-none': !hasNewVersion }"><span class="badge badge-secondary">upgrade</span></a>
+                    <span class="badge badge-success" :class="{ 'd-none': hasNewVersion || versionChecking }">latest</span>
+                </p>
                 <p class="px-4">Copyright (c) 2018 Steven Shan. <br />All rights reserved.</p>
                 <p class="px-4">Licensed under the MIT License.</p>
                 <p class="px-4">
@@ -58,12 +61,15 @@
                         <a class="dropdown-item" href="#" @click="updateMethod('TRACE')" :class="{ active: method === 'TRACE' }">TRACE</a>
                     </div>
                 </div>
-                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" required>
+                <input id="inputUrl" type="url" class="form-control code-font" v-model="url" @keyup.enter="sendRequestAsync()" value="https://example.com"
+                    required>
                 <div class="input-group-append">
-                    <button id="btnSend" class="btn btn-secondary" type="submit" @click="sendRequestAsync()">Send</button>
+                    <button id="btnSend" class="btn btn-secondary" style="padding-right: 24px" type="submit" @click="sendRequestAsync()" :disabled="isInvalidToSend()">
+                        <div class="loader" :class="{ invisible: !sendingRequest }"></div> <i class="icons i-send"></i>
+                    </button>
                 </div>
             </div>
-            <div class="progress" style="height: 5px; width: 100%" :class="{ invisible: !inProgress }">
+            <div class="progress" style="height: 5px; width: 100%" :class="{ invisible: !sendingRequest }">
                 <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" aria-valuenow="1" aria-valuemin="0"
                     aria-valuemax="1" style="width: 100%"></div>
             </div>
@@ -71,7 +77,7 @@
         <main>
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col px-1">
+                    <div class="col-6 px-1">
                         <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="protocol" readonly>
                         <input type="text" class="form-control code-font" style="margin-bottom: 5px" v-model="host" readonly>
                         <div class="input-group" style="margin-bottom: 5px">
@@ -81,11 +87,16 @@
                             <input type="text" id="inputUserAgent" v-model="userAgent" class="form-control code-font" placeholder="(none)" aria-label="User Agent"
                                 aria-describedby="labelUserAgent">
                         </div>
-                        <textarea id="textHeaders" class="form-control headers code-font" v-model="headers" placeholder="(Request headers)"></textarea>
+                        <textarea id="textHeaders" class="form-control headers code-font" :class="{ 'is-invalid': isHeadersInvalid() }" v-model="headers"
+                            placeholder="(Request headers)"></textarea>
                         <textarea id="textBody" class="form-control body code-font" :disabled="noBodyAllowed" v-model="body" placeholder="(Request body)"></textarea>
                     </div>
-                    <div class="col px-1">
-                        <textarea id="textResponse" class="form-control full code-font" readonly placeholder="Response"></textarea>
+                    <div class="col-6 px-1">
+                        <input type="text" class="form-control code-font" placeholder="Search in response" v-model="search" style="margin-bottom: 5px"
+                            :disabled="String.isEmpty(response)">
+                        <div class="response form-control bg-light">
+                            <div class="highlights code-font" v-html="highlightedResponse"></div>
+                        </div>
                     </div>
                 </div>
             </div>

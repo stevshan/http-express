@@ -69,3 +69,7 @@
 .icons.i-http-express::before {
     content: "\f1d8";
 }
+
+.icons.i-send::before {
+    content: "\f1d8";
+}

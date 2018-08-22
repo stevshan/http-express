@@ -16,6 +16,7 @@ import handleAuthCertResponseAsync from "./response-handlers/handle-auth-cert";
 import NodeHttpClientBuilder from "./node.http-client-builder";
 import ElectronHttpClientBuilder from "./electron.http-client-builder";
 import { IAsyncHandlerConstructor } from "http-express.common";
+import NodeHttpClient from "./node.http-client";
 
 function buildNodeHttpClientAsync(
     log: ILog,
@@ -60,7 +61,7 @@ function buildElectronHttpClientAsync(
             name: "http.node-http-client",
             version: appUtils.getAppVersion(),
             descriptor: (log: ILog, certLoader: ICertificateLoader, serverCertValidator?: ServerCertValidator): Promise<IHttpClient> =>
-                buildNodeHttpClientAsync(log, certLoader, HttpProtocols.any, serverCertValidator),
+                Promise.resolve(new NodeHttpClient(log, certLoader, "*", serverCertValidator, null, null)),
             deps: ["logging", "cert.cert-loader"]
         })
         .register<IHttpClient>({

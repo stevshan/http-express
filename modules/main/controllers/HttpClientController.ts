@@ -33,7 +33,8 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
 
     if (!Function.isFunction(httpResponse.readAsync)) {
         response += httpResponse["message"];
-        $("#textResponse").val(response);
+
+        this.response = response;
         return;
     }
 
@@ -79,60 +80,64 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
         response += data;
     }
 
-    $("#textResponse").val(response);
+    this.response = response;
 }
 
-function sendRequestAsync(): Promise<void> {
+async function sendRequestAsync(): Promise<void> {
     disableInputs();
+    this.sendingRequest = true;
 
-    this.inProgress = true;
+    try {
+        const headers: IDictionary<string | Array<string>> = {};
+        const rawHeaders = this.headers.split("\r\n");
 
-    const headers: IDictionary<string | Array<string>> = {};
-    const rawHeaders = this.headers.split("\r\n");
+        for (let rawHeaderIndex = 0; rawHeaderIndex < rawHeaders.length - 1; rawHeaderIndex++) {
+            const headerPair = rawHeaders[rawHeaderIndex].split(":", 2);
+            const headerName = headerPair[0].trim();
+            const headerValue = headerPair[1].trim();
 
-    for (let rawHeaderIndex = 0; rawHeaderIndex < rawHeaders.length - 1; rawHeaderIndex++) {
-        const headerPair = rawHeaders[rawHeaderIndex].split(":", 2);
-        const headerName = headerPair[0].trim();
-        const headerValue = headerPair[1].trim();
+            if (headerName in headers) {
+                const existingHeaderValue = headers[headerName];
 
-        if (headerName in headers) {
-            const existingHeaderValue = headers[headerName];
+                if (Array.isArray(existingHeaderValue)) {
+                    existingHeaderValue.push(headerValue);
+                } else {
+                    const newHeaderValue = [];
 
-            if (Array.isArray(existingHeaderValue)) {
-                existingHeaderValue.push(headerValue);
+                    newHeaderValue.push(headers[headerName]);
+                    newHeaderValue.push(headerValue);
+
+                    headers[headerName] = newHeaderValue;
+                }
             } else {
-                const newHeaderValue = [];
-
-                newHeaderValue.push(headers[headerName]);
-                newHeaderValue.push(headerValue);
-
-                headers[headerName] = newHeaderValue;
+                headers[headerName] = headerValue;
             }
-        } else {
-            headers[headerName] = headerValue;
         }
-    }
 
-    if (!String.isEmptyOrWhitespace(this.userAgent)) {
-        headers["User-Agent"] = this.userAgent;
-    }
+        if (!String.isEmptyOrWhitespace(this.userAgent)) {
+            headers["User-Agent"] = this.userAgent;
+        }
 
-    if (this.method === "GET" || this.method === "DELETE") {
-        this.body = "";
-    }
+        if (this.method === "GET" || this.method === "DELETE") {
+            this.body = "";
+        }
 
-    return this.httpClientPromise
-        .then((httpClient) =>
-            httpClient.requestAsync(
-                {
-                    method: this.method,
-                    url: this.url,
-                    headers: headers
-                },
-                this.body || null))
-        .then((response) => displayResponseAsync(response))
-        .then(() => disableInputs(true))
-        .then(() => this.inProgress = false);
+        this.response = "";
+
+        await this.httpClientPromise
+            .then((httpClient) =>
+                httpClient.requestAsync(
+                    {
+                        method: this.method,
+                        url: this.url,
+                        headers: headers
+                    },
+                    this.body || null))
+            .then((response) => this.displayResponseAsync(response));
+    } finally {
+        disableInputs(true);
+        this.sendingRequest = false;
+    }
 }
 
 function validateServerCert(serverName: string, cert: ICertificateInfo): Error | void {
@@ -215,6 +220,8 @@ function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>):
     });
 }
 
+const httpHeaderRegex = /^((\u0020*[^\(\)\<\>\@\,\;\:\\\"\/\[\]\?\=\{\}\u0020\u0000-\u001f\u007F]+\u0020*\:\u0020*[^\u0000-\u001f\u007F\u0009\u0020]*)*\n?)*$/;
+
 const vm = (async () => {
     const httpClientBuilder = await moduleManager.getComponentAsync("http.node-client-builder", validateServerCert);
     const handleCertResponse = await moduleManager.getComponentAsync("http.response-handlers.handle-auth-cert", selectClientCertAsync);
@@ -224,29 +231,74 @@ const vm = (async () => {
     return new Vue({
         el: "#HttpClient",
         data: {
-            url: "http://example.com",
+            url: "https://example.com",
             method: "GET",
             headers: "",
             body: "",
-            inProgress: false,
+            search: "",
+            response: "",
             userAgent: `HttpExpress/${semver.major(electron.app.getVersion())}.${semver.minor(electron.app.getVersion())}`,
-            httpClientPromise: httpClientBuilder.buildAsync("*")
+            httpClientPromise: httpClientBuilder.buildAsync("*"),
+            sendingRequest: false
         },
         computed: {
             protocol: function (): string {
                 return `${this.method} ${url.parse(this.url).path} HTTP/1.1`;
             },
+
             host: function (): string {
                 return `Host: ${url.parse(this.url).host}`;
             },
+
             noBodyAllowed: function (): boolean {
                 return this.method === "GET" || this.method === "DELETE";
+            },
+
+            highlightedResponse: function (): string {
+                let encodedResponse = $("<div/>").text(this.response).html();
+
+                if (!String.isEmpty(this.search)) {
+                    const encodedSearch = $("<div/>").text(this.search).html();
+
+                    encodedResponse = encodedResponse.replace(new RegExp(encodedSearch, "gi"), "<mark>$&</mark>");
+                }
+
+                this.$nextTick(function () {
+                    const markEl = $("div.highlights mark");
+
+                    if (markEl && markEl.length > 0) {
+                        markEl[0].scrollIntoView();
+                    }
+                });
+
+                return encodedResponse.replace(new RegExp("\n", "g"), "<br />");
+            }
+        },
+        watch: {
+            headers: function (oldHeaders: string, newHeaders: string): void {
+                if (!httpHeaderRegex.test(newHeaders)) {
+                    (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("invalid");
+                } else {
+                    (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("");
+                }
             }
         },
         methods: {
+            isInvalidToSend: function (): boolean {
+                const elInvalid = $(":invalid");
+
+                return elInvalid && elInvalid.length > 0 ? true : false;
+            },
+
+            isHeadersInvalid: function (): boolean {
+                return $("#textHeaders").is(":invalid");
+            },
+
             updateMethod: function (method: string): void {
                 this.method = method;
             },
+
+            displayResponseAsync: displayResponseAsync,
             sendRequestAsync: sendRequestAsync,
             validateServerCert: validateServerCert
         }

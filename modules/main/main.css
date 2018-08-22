@@ -3,6 +3,12 @@
     -webkit-app-region: drag;
 }
 
+mark {
+    padding: 0 !important;
+    background-color: #6c757d;
+    color: #fff;
+}
+
 button {
     -webkit-app-region: no-drag;
 }
@@ -21,8 +27,10 @@ main textarea {
     white-space: pre;
 }
 
-main textarea.full {
-    height: 100%;
+main div.response {
+    height: calc(100% - 42px);
+    overflow: auto;
+    padding: 5px;
 }
 
 main textarea.headers {
@@ -45,4 +53,19 @@ main textarea.body {
 
 .width-75 {
     width: 75px;
+}
+
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #555; 
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
