@@ -59,14 +59,12 @@ function getInstallerOptions(arch) {
             "16x16": "icons/icon16x16.png",
             "32x32": "icons/icon32x32.png",
             "48x48": "icons/icon48x48.png",
-            "52x52": "icons/icon52x52.png",
             "64x64": "icons/icon64x64.png",
             "96x96": "icons/icon96x96.png",
             "128x128": "icons/icon128x128.png",
             "192x192": "icons/icon192x192.png",
             "256x256": "icons/icon256x256.png",
-            "512x512": "icons/icon512x512.png",
-            "1024x1024": "icons/icon1024x1024.png"
+            "512x512": "icons/icon512x512.png"
         },
         categories: ["Utility", "Development"]
     };
