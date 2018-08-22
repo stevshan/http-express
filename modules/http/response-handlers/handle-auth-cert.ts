@@ -43,7 +43,12 @@ export default function handleCertAsync(
 
             log.writeInfoAsync("Client certificate is required.");
 
-            const validCertInfos = (await pkiCertSvc.getCertificateInfosAsync("My")).filter((certInfo) => certInfo.hasPrivateKey);
+            let validCertInfos = (await pkiCertSvc.getCertificateInfosAsync("My"));
+
+            if (validCertInfos) {
+                validCertInfos = validCertInfos.filter((certInfo) => certInfo.hasPrivateKey);
+            }
+
             let selectedCert = await selectClientCertAsyncHandler(requestOptions.url, validCertInfos);
 
             if (selectedCert) {

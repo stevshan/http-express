@@ -131,11 +131,74 @@
                                     <span class="width-75 code-label">Hash:</span> <span>{{certInfo.thumbprint}}</span><br />
                                 </p>
                             </a>
+                            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start" @click="updateSelectedCert(null)"
+                                :class="{ active: !selectedCertInfo }">
+                                <h6>Client Certificate File</h6>
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" :id="id + '-inputPassword'">Password</span>
+                                    </div>
+                                    <input type="password" class="form-control" v-model="password" placeholder="Password (optional if there is no password for the pfx cert or key file for the pem cert)" aria-label="Password" :aria-describedby="id + '-inputPassword'">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" required v-model="certFilePath" readonly placeholder="Path of the client certificate" aria-label="Path of the client certificate" :aria-describedby="id + '-OpenCertFile'">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenCertFile'" @click="browseCertFiles()">Browse ...</button>
+                                    </div>
+                                </div>
+                                <div class="input-group mb-3" :class="{ 'd-none': !keyFileRequired }">
+                                    <input type="text" class="form-control" required v-model="keyFilePath" readonly placeholder="Path of the key file for the client certificate" aria-label="Path of the key file for the client certificate" :aria-describedby="id + '-OpenKeyFile'">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenKeyFile'" @click="browseKeyFiles()">Browse ...</button>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" @click="selectCert">Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-template" id="Template-Modal-OpenSingleCertificate">
+        <div class="modal fade" :id="id" tabindex="-1" role="dialog" :aria-labelledby="id + '-Title'"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" :id="id + '-Title'">HTTP 403: Client certificate required.</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        <p>A client certificate is required by the target server. Please provide client certificate information below.</p>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text" :id="id + '-inputPassword'">Password</span>
+                            </div>
+                            <input type="password" class="form-control" v-model="password" placeholder="Password (optional if there is no password for the pfx cert or key file for the pem cert)" aria-label="Password" :aria-describedby="id + '-inputPassword'">
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" required v-model="certFilePath" readonly placeholder="Path of the client certificate" aria-label="Path of the client certificate" :aria-describedby="id + '-OpenCertFile'">
+                            <div class="input-group-append">
+                              <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenCertFile'" @click="browseCertFiles()">Browse ...</button>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3" :class="{ 'd-none': !keyFileRequired }">
+                            <input type="text" class="form-control" required v-model="keyFilePath" readonly placeholder="Path of the key file for the client certificate" aria-label="Path of the key file for the client certificate" :aria-describedby="id + '-OpenKeyFile'">
+                            <div class="input-group-append">
+                              <button class="btn btn-outline-secondary" type="button" :id="id + '-OpenKeyFile'" @click="browseKeyFiles()">Browse ...</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" @click="selectCert">OK</button>
                     </div>
                 </div>
             </div>

@@ -193,7 +193,11 @@ export function resolve(
 }
 
 export function local(target: string, fromAppDir: boolean = false): string {
-    return path.join(fromAppDir ? appDir : path.dirname(utils.getCallerInfo().fileName), target);
+    const fileNameUrl = url.parse(utils.getCallerInfo().fileName);
+
+    return path.join(
+        fromAppDir ? appDir : path.dirname(fileNameUrl.protocol === "file:" ? fileNameUrl.path : fileNameUrl.href), 
+        target);
 }
 
 export function logUnhandledRejection(): void {

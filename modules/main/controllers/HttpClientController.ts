@@ -32,7 +32,8 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
     let response: string = "";
 
     if (!Function.isFunction(httpResponse.readAsync)) {
-        response += httpResponse["message"];
+        response += `${httpResponse["message"]}\r\n`;
+        response += `${httpResponse["stack"]}\r\n`;
 
         this.response = response;
         return;
@@ -166,6 +167,129 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
     }
 }
 
+function createClientCertSelectionVue(
+    elementId: string,
+    templateId: string,
+    certInfos: Array<ICertificateInfo>,
+    resolve: (result: ICertificate | ICertificateInfo | Promise<ICertificate | ICertificateInfo>) => void,
+    reject: (reason?: any) => void)
+    : any {
+    return new Vue({
+        el: `#${elementId}`,
+        template: `#${templateId}`,
+        data: {
+            id: elementId,
+            certInfos: certInfos ? certInfos.filter((certInfo) => certInfo.hasPrivateKey) : [],
+            selectedCertInfo: null,
+            password: "",
+            certFilePath: "",
+            keyFilePath: ""
+        },
+        computed: {
+            keyFileRequired: function (): boolean {
+                return this.certFilePath && !(/\.pfx$/i.test(this.certFilePath));
+            }
+        },
+        methods: {
+            dispose: function () {
+                $(`#${this.id}`).modal("dispose");
+                this.$destroy();
+                $(`#${this.id}+div.modal-backdrop`).remove();
+                $(`#${this.id}`).remove();
+            },
+            onModalHidden: function () {
+                this.dispose();
+                resolve(null);
+            },
+
+            updateSelectedCert: function (certInfo: ICertificateInfo): void {
+                this.selectedCertInfo = certInfo;
+            },
+
+            selectCert: function (): void {
+                this.dispose();
+
+                if (!this.selectedCertInfo) {
+                    this.selectedCertInfo = {
+                        type: this.keyFileRequired ? "pem" : "pfx",
+                        password: this.password
+                    };
+
+                    if (this.keyFileRequired) {
+                        this.selectedCertInfo.key = this.keyFilePath;
+                        this.cert = this.certFilePath;
+                    } else {
+                        this.selectedCertInfo.pfx = this.certFilePath;
+                    }
+                }
+
+                resolve(this.selectedCertInfo);
+            },
+
+            browseCertFiles: function (): void {
+                const selectedFiles = electron.dialog.showOpenDialog({
+                    title: "Open a client certificate ...",
+                    filters: [
+                        {
+                            name: "certificates",
+                            extensions: ["pfx", "PFX", "pem", "PEM", "crt", "CRT", "cer", "CER"]
+                        },
+                        {
+                            name: "PFX",
+                            extensions: ["pfx", "PFX"]
+                        },
+                        {
+                            name: "PEM",
+                            extensions: ["pem", "PEM"]
+                        },
+                        {
+                            name: "CRT",
+                            extensions: ["crt", "CRT"]
+                        },
+                        {
+                            name: "CER",
+                            extensions: ["cer", "CER"]
+                        }
+                    ],
+                    message: "Please select a client certificate to use.",
+                    properties: ["openFile", "createDirectory"]
+                });
+
+                if (!selectedFiles || selectedFiles.length <= 0) {
+                    return;
+                }
+
+                this.certFilePath = selectedFiles[0];
+            },
+
+            browseKeyFiles: function (): void {
+                const selectedFiles = electron.dialog.showOpenDialog({
+                    title: "Open a key file for the client certificate ...",
+                    filters: [
+                        {
+                            name: "key file",
+                            extensions: ["key"]
+                        }
+                    ],
+                    message: "Please select the key for the supplied client certificate.",
+                    properties: ["openFile", "createDirectory"]
+                });
+
+                if (!selectedFiles || selectedFiles.length <= 0) {
+                    return;
+                }
+
+                this.keyFilePath = selectedFiles[0];
+            }
+        },
+        filters: {
+            date: function (dateValue: string): string {
+                return (new Date(dateValue)).toLocaleString();
+            }
+        }
+    });
+}
+
 function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>): Promise<ICertificate | ICertificateInfo> {
     return new Promise<ICertificate | ICertificateInfo>((resolve, reject) => {
         const elementId: string = `div-${uuidv4().replace(/\-/gi, "")}`;
@@ -173,49 +297,21 @@ function selectClientCertAsync(url: string, certInfos: Array<ICertificateInfo>):
         $("body").append($(`<div id="${elementId}"></div>`));
 
         try {
-            const vm = new Vue({
-                el: `#${elementId}`,
-                template: "#Template-Modal-SelectCertificates",
-                data: {
-                    id: elementId,
-                    certInfos: certInfos.filter((certInfo) => certInfo.hasPrivateKey),
-                    selectedCertInfo: null
-                },
-                methods: {
-                    dispose: function () {
-                        $(`#${this.id}`).modal("dispose");
-                        this.$destroy();
-                        $(`#${this.id}+div.modal-backdrop`).remove();
-                        $(`#${this.id}`).remove();
-                    },
-                    onModalHidden: function () {
-                        this.dispose();
-                        resolve(null);
-                    },
-
-                    updateSelectedCert: function (certInfo: ICertificateInfo): void {
-                        this.selectedCertInfo = certInfo;
-                    },
-
-                    selectCert: function (): void {
-                        this.dispose();
-                        resolve(this.selectedCertInfo);
-                    }
-                },
-                filters: {
-                    date: function (dateValue: string): string {
-                        return (new Date(dateValue)).toLocaleString();
-                    }
-                }
-            });
+            const vm = createClientCertSelectionVue(
+                elementId,
+                certInfos && certInfos.length > 0 ? "Template-Modal-SelectCertificates" : "Template-Modal-OpenSingleCertificate",
+                certInfos,
+                resolve,
+                reject);
 
             $(`#${vm.id}`).on("hidden.bs.modal", function (e) {
                 vm.onModalHidden();
             });
 
             $(`#${vm.id}`).modal();
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     });
 }
