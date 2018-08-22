@@ -275,7 +275,7 @@ const vm = (async () => {
             }
         },
         watch: {
-            headers: function (oldHeaders: string, newHeaders: string): void {
+            headers: function (newHeaders: string, oldHeaders: string): void {
                 if (!httpHeaderRegex.test(newHeaders)) {
                     (<HTMLTextAreaElement>document.getElementById("textHeaders")).setCustomValidity("invalid");
                 } else {
