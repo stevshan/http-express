@@ -43,13 +43,18 @@ async function startup(): Promise<void> {
             "browser-window",
             <BrowserWindowConstructorOptions>{
                 fullscreenable: true,
-                frame: false,
+                frame: env.platform === Platform.MacOs,
                 minHeight: 600,
                 minWidth: 800
             });
 
+    if (env.platform === Platform.MacOs) {
+        mainWindow.setTitle("");
+    }
+
     mainWindow.setMenuBarVisibility(false);
-    mainWindow.loadURL(appUtils.local("./main.html"));
+    mainWindow.loadFile(appUtils.local("./main.html"));
+    mainWindow.show();
 
     // Handle "window-all-closed" event.
     electron.app.removeAllListeners("window-all-closed");

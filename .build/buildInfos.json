@@ -1,5 +1,5 @@
 {
-    "productName": "HTPP Express",
+    "productName": "HTTP Express",
     "description": "A simple HTTP client with UX.",
     "copyright": "Steven Shan",
     "targetExecutableName": "http-express",

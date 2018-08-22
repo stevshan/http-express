@@ -43,7 +43,7 @@ main textarea.body {
 }
 
 .code-font {
-    font-family: "consolas"
+    font-family: "consolas", Menlo, Monaco, 'Courier New', monospace;
 }
 
 .code-label {

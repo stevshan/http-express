@@ -16,6 +16,7 @@ const gtslint = require("gulp-tslint");
 const tslint = require("tslint");
 const globby = require("globby");
 const fs = require("fs");
+const path = require("path");
 
 const buildInfos = config.buildInfos;
 
@@ -110,7 +111,7 @@ gulp.task("build:fonts",
 gulp.task("build:img",
     () =>
         gulp.src(utilities.formGlobs(["icons/**/*.*"]))
-            .pipe(gulp.dest(buildInfos.paths.appDir)));
+            .pipe(gulp.dest(path.join(buildInfos.paths.appDir, "icons"))));
 
 gulp.task("build:json",
     () =>
