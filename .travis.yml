@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "node"
+os:
+  - linux
+  - osx
+before_install:
+  - npm install -g npm@latest
+install:
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then sudo apt-get install fakeroot; fi
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then sudo apt-get install rpm; fi
+  - npm install -g gulp-cli
+  - npm install
+script:
+  - gulp -f ./gulpfile.js publish
