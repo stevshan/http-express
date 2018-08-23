@@ -1,5 +1,9 @@
 # HTTP Express
-A simple HTTP client with UX. Latest release is [here](https://github.com/stevshan/http-express/releases/latest)
+A simple HTTP client with UX. Latest release is [here](https://github.com/stevshan/http-express/releases/latest).
+
+HTTP Express is based on Electron/NodeJS and written with TypeScript.
+
+Licensed under MIT license.
 
 ## Highlights
 * Provide all major platforms support.
