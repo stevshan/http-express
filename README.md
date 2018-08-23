@@ -1,5 +1,5 @@
-# http-express
-A simple HTTP client with UX.
+# HTTP Express
+A simple HTTP client with UX. Latest release is [here](https://github.com/stevshan/http-express/releases/latest)
 
 ## Highlights
 * Provide all major platforms support.
