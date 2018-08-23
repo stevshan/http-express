@@ -148,8 +148,8 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
     certDetail += `Issuer: ${cert.issuerName} \r\n`;
     certDetail += `Serial: ${cert.serialNumber} \r\n`;
     certDetail += `Thumbprint: ${cert.thumbprint} \r\n`;
-    certDetail += `Valid from: ${cert.validStart.toLocaleString()} \r\n`;
-    certDetail += `Valid to: ${cert.validExpiry.toLocaleString()} \r\n`;
+    certDetail += `Valid from: ${new Date(cert.validStart).toLocaleString()} \r\n`;
+    certDetail += `Valid to: ${new Date(cert.validExpiry).toLocaleString()} \r\n`;
 
     const response =
         electron.dialog.showMessageBox(electron.remote.getCurrentWindow(), {
@@ -157,7 +157,7 @@ function validateServerCert(serverName: string, cert: ICertificateInfo): Error |
             buttons: ["Trust", "Cancel"],
             defaultId: 1,
             title: "Certificate Validation",
-            message: "Should the following certificate from the server be trusted?",
+            message: "Trust the certificate from the server?",
             detail: certDetail,
             cancelId: 1
         });
