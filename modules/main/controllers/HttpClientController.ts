@@ -16,6 +16,16 @@ import { electron } from "../../../utilities/electron-adapter";
 
 const Vue = require("vue/dist/vue.min.js");
 
+const textContentTypes = {
+    "application": true,
+    "application/xml": true,
+    "application/typescript": true,
+    "application/json": true,
+    "application/javascript": true,
+    "application/ecmascript": true,
+    "image/svg+xml": true
+};
+
 function disableInputs(reset: boolean = false): void {
     $("#btnMethod").prop("disabled", !reset);
     $("#inputUrl").prop("disabled", !reset);
@@ -62,9 +72,15 @@ async function displayResponseAsync(httpResponse: IHttpResponse): Promise<void> 
 
     if (data instanceof Buffer) {
         let encoding: string = null;
-        const contentType = httpHeaders["content-type"];
+        const contentType = <string>httpHeaders["content-type"];
+        const contentTypeMatches = /([^\;]+)\;/i.exec(contentType);
+        let contentTypeValue: string = null;
 
-        if (!encoding && contentType && contentType.includes("text/")) {
+        if (contentTypeMatches && contentTypeMatches.length > 0) {
+            contentTypeValue = contentTypeMatches[1];
+        }
+
+        if (!encoding && contentType && (contentType.includes("text/") || contentTypeValue in textContentTypes)) {
             encoding = "utf8";
 
             if (contentType.includes("=utf-8")) {
